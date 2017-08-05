@@ -1,0 +1,9 @@
+*iml
+*idea
+*dataset
+*tmp
+*others_solution
+*.jpg
+*.gif
+*.txt
+*.pyc
