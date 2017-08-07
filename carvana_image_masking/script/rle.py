@@ -2,9 +2,10 @@ import numpy as np
 import pandas as pd
 from scipy import ndimage
 import os
+import tensorflow as tf
 from config import *
 
-def run_length_encode(mask_image):
+def run_length_encoding(mask_image):
     pixels = mask_image.flatten()
     # We avoid issues with '1' at the start or end (at the corners of
     # the original image) by setting those pixels to '0' explicitly.
@@ -25,8 +26,8 @@ def rle_to_string(runs):
 
 def test_rle_encode():
     test_mask = np.asarray([[0, 0, 0, 0], [0, 0, 1, 1], [0, 0, 1, 1], [1, 0, 0, 0]])
-    print rle_to_string(run_length_encode(test_mask))
-    assert rle_to_string(run_length_encode(test_mask)) == '7 2 11 3'
+    print rle_to_string(run_length_encoding(test_mask))
+    assert rle_to_string(run_length_encoding(test_mask)) == '7 2 11 3'
 
     train_masks = pd.read_csv(TRAIN_MASKS_CSV)
     for i in xrange(len(train_masks)):
@@ -40,8 +41,8 @@ def test_rle_encode():
         mask_img[mask_img <= 127] = 0
         mask_img[mask_img > 127] = 1
 
-        print rle_to_string(run_length_encode(mask_img))
-        assert rle_to_string(run_length_encode(mask_img)) == rle_mask
+        print rle_to_string(run_length_encoding(mask_img))
+        assert rle_to_string(run_length_encoding(mask_img)) == rle_mask
 
 
 
@@ -54,7 +55,7 @@ def test_rle_encode():
 
 def gen_rle():
     files = os.listdir(TEST_PREDICT_DIR)
-    with open(SUBMISSION_DIR + "/" + "submission-2017-08-05", 'w') as outfile:
+    with open(SUBMISSION_DIR + "/" + "submission-2017-08-06", 'w') as outfile:
         outfile.write('img,rle_mask\n')
         i = 0
         for f in files:
@@ -74,12 +75,12 @@ def gen_rle():
             # print img.max()
             # print img.min()
 
-            rle_str = rle_to_string(run_length_encode(img))
+            rle_str = rle_to_string(run_length_encoding(img))
 
             # print f
             # print in_filename
 
-            out_string = f.split(".")[0] + ".jpg" + ',' + rle_str + '\n'
+            out_string = f.split("_mask")[0] + ".jpg" + ',' + rle_str + '\n'
             outfile.write(out_string)
 
             if i % 100 == 0:
@@ -87,6 +88,15 @@ def gen_rle():
 
 
 
+def dice_coef(y_true, y_pred):
+    smooth = 1e-5
+
+    y_true = tf.round(tf.reshape(y_true, [-1]))
+    y_pred = tf.round(tf.reshape(y_pred, [-1]))
+
+    isct = tf.reduce_sum(y_true * y_pred)
+
+    return 2 * isct / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred))
 
 
 if __name__ == '__main__':
