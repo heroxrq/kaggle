@@ -9,7 +9,6 @@ def image_resize(in_dir, out_dir, resized_width, resized_height):
     for f in files:
         in_filename = in_dir + os.sep + f
         out_filename = out_dir + os.sep + f
-        print out_filename
         with Image.open(in_filename) as img:
             resized_img = img.resize((resized_width, resized_height))
             resized_img.save(out_filename)

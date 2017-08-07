@@ -66,9 +66,9 @@ def predict(model):
 
 def main(argv):
     # resize_all_images()
-    # model = train()
+    model = train()
     # model = load_model()
-    # predict(model)
+    predict(model)
     image_resize(RESIZED_TEST_PREDICT_DIR, TEST_PREDICT_DIR, IMAGE_WIDTH, IMAGE_HEIGHT)
     gen_rle()
 
