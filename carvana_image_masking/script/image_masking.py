@@ -1,13 +1,13 @@
 import numpy as np
 import os
 import sys
+import time
 from PIL import Image
 from keras.models import model_from_json
 from keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 
 from dataset_util import *
-from image_util import *
 from my_unet import UNet
 from rle import *
 
@@ -46,31 +46,46 @@ def load_model():
     return model
 
 
-def predict(model):
+def predict_and_make_submission(model):
     all_test_images = os.listdir(RESIZED_TEST_DIR)
     test_gen = test_data_generator(RESIZED_TEST_DIR, all_test_images, BATCH_SIZE)
 
-    i = 0
-    for batch in test_gen:
-        res_array = model.predict_on_batch(batch)
+    submission_file = SUBMISSION_DIR + "/submission-" + time.strftime("%Y%m%d%H%M%S") + ".csv"
+    with open(submission_file, 'w') as outfile:
+        outfile.write('img,rle_mask\n')
 
-        res_array = np.reshape(res_array, (len(res_array), RESIZED_HEIGHT, RESIZED_WIDTH))
-        for k in xrange(len(res_array)):
-            idx = i + k
-            img = Image.fromarray(res_array[k] * 255.0, 'F')
-            resized_test_predict_filename = RESIZED_TEST_PREDICT_DIR + "/" + all_test_images[idx].split(".")[0] + "_mask.gif"
-            img.save(resized_test_predict_filename)
-            print idx, resized_test_predict_filename
-        i += BATCH_SIZE
+        i = 0
+        for batch in test_gen:
+            res_array = model.predict_on_batch(batch)
+
+            res_array = np.reshape(res_array, (len(res_array), RESIZED_HEIGHT, RESIZED_WIDTH))
+            for k in xrange(len(res_array)):
+                # rle
+                img = Image.fromarray(res_array[k] * 255.0, 'F')
+                img = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT))
+                img = np.array(img)
+                img[img <= 127.5] = 0
+                img[img > 127.5] = 1
+                img = img.astype(int)
+                rle_str = rle_to_string(run_length_encoding(img))
+
+                # make submission
+                idx = i + k
+                out_string = all_test_images[idx] + ',' + rle_str + '\n'
+                outfile.write(out_string)
+
+                if idx % 100 == 0:
+                    print idx
+            i += BATCH_SIZE
 
 
 def main(argv):
     # resize_all_images()
-    model = train()
-    # model = load_model()
-    predict(model)
-    image_resize(RESIZED_TEST_PREDICT_DIR, TEST_PREDICT_DIR, IMAGE_WIDTH, IMAGE_HEIGHT)
-    gen_rle()
+    # model = train()
+    model = load_model()
+    predict_and_make_submission(model)
+    # image_resize(RESIZED_TEST_PREDICT_DIR, TEST_PREDICT_DIR, IMAGE_WIDTH, IMAGE_HEIGHT)
+    # gen_rle()
 
 
 if __name__ == '__main__':

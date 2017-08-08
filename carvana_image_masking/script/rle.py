@@ -49,8 +49,12 @@ def test_rle_encode():
         return 0
 
 
+def gen_rle(image_array):
+    pass
 
 
+def make_submission():
+    pass
 
 
 def gen_rle():
@@ -62,6 +66,7 @@ def gen_rle():
             i += 1
             in_filename = TEST_PREDICT_DIR + os.sep + f
             img = ndimage.imread(in_filename, mode='F')
+            # print type(img)
 
             # print type(img)
             # print img.shape
