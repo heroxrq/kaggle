@@ -92,16 +92,15 @@ def gen_rle():
                 print i
 
 
-
 def dice_coef(y_true, y_pred):
-    smooth = 1e-5
+    smooth = 1e-3
 
     y_true = tf.round(tf.reshape(y_true, [-1]))
     y_pred = tf.round(tf.reshape(y_pred, [-1]))
 
-    isct = tf.reduce_sum(y_true * y_pred)
+    intersection = tf.reduce_sum(y_true * y_pred)
 
-    return 2 * isct / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred))
+    return (2.0 * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 import numpy as np
 from keras.preprocessing import image
+from config import *
+from keras.preprocessing.image import ImageDataGenerator
 
 
 def load_img_array(image_name, grayscale):
@@ -20,7 +22,8 @@ def train_data_generator(data_dir, mask_dir, images, batch_size):
             imgs.append(img_array)
 
             # masks
-            mask_name = mask_dir + "/" + images[i].split(".")[0] + '_mask.gif'
+            # mask_name = mask_dir + "/" + images[i].split(".")[0] + '_mask.gif'
+            mask_name = mask_dir + "/" + images[i]
             mask_array = load_img_array(mask_name, grayscale=True)
             labels.append(mask_array)
         imgs = np.array(imgs)
