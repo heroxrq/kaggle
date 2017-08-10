@@ -7,7 +7,7 @@ RESIZED_WIDTH = 256
 RESIZED_HEIGHT = 256
 
 BATCH_SIZE = 4
-EPOCHS = 15
+EPOCHS = 5
 
 BASE_DIR = "/home/xrq/prog/kaggle/carvana_image_masking"
 
