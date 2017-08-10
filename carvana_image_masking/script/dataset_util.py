@@ -1,6 +1,5 @@
 import numpy as np
 from keras.preprocessing import image
-from config import *
 from keras.preprocessing.image import ImageDataGenerator
 
 
@@ -10,7 +9,16 @@ def load_img_array(image_name, grayscale):
     return img_array
 
 
-def train_data_generator(data_dir, mask_dir, images, batch_size):
+def train_data_generator(data_dir, mask_dir, images, batch_size, seed=1):
+    data_gen_args = dict(rotation_range=5,
+                         width_shift_range=0.05,
+                         height_shift_range=0.05,
+                         zoom_range=0.05,
+                         horizontal_flip=True)
+    image_data_gen = ImageDataGenerator(**data_gen_args)
+    mask_data_gen = ImageDataGenerator(**data_gen_args)
+
+    batch_cnt = 0
     while True:
         idx = np.random.choice(len(images), batch_size)
         imgs = []
@@ -19,13 +27,16 @@ def train_data_generator(data_dir, mask_dir, images, batch_size):
             # images
             image_name = data_dir + "/" + images[i]
             img_array = load_img_array(image_name, grayscale=False)
+            img_array = image_data_gen.random_transform(img_array, seed + batch_cnt)
             imgs.append(img_array)
 
             # masks
-            # mask_name = mask_dir + "/" + images[i].split(".")[0] + '_mask.gif'
-            mask_name = mask_dir + "/" + images[i]
+            mask_name = mask_dir + "/" + images[i].split(".")[0] + '_mask.gif'
             mask_array = load_img_array(mask_name, grayscale=True)
+            mask_array = mask_data_gen.random_transform(mask_array, seed + batch_cnt)
             labels.append(mask_array)
+
+            batch_cnt += 1
         imgs = np.array(imgs)
         labels = np.array(labels)
         yield imgs, labels

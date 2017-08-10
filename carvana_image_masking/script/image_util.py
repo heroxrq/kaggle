@@ -24,5 +24,4 @@ def resize_all_images():
 
 
 if __name__ == '__main__':
-    # resize_all_images()
-    image_resize(TRAIN_MASKS_DIR, RESIZED_TRAIN_MASKS_DIR, RESIZED_WIDTH, RESIZED_HEIGHT, 'PNG', '.png')
+    resize_all_images()
