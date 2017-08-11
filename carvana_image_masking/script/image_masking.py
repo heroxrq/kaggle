@@ -47,7 +47,7 @@ def train():
     validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=False)
 
     model = UNet(layers=LAYERS, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=FILTERS, num_classes=1).create_unet_model()
-    model.compile(optimizer=SGD(lr=0.01, decay=1e-6, momentum=0.9), loss=dice_loss, metrics=[dice_coef])
+    model.compile(optimizer=SGD(lr=0.01, decay=1e-6, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
 
     steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
     validation_steps = len(validation_images) / TRAIN_BATCH_SIZE
