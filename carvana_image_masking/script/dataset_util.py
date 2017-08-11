@@ -1,6 +1,10 @@
 import numpy as np
+import os
+from PIL import Image
 from keras.preprocessing import image
 from keras.preprocessing.image import ImageDataGenerator
+
+from config import *
 
 
 def load_img_array(image_name, grayscale=False, target_size=None):
@@ -13,7 +17,6 @@ def train_data_generator(data_dir, mask_dir, images, batch_size, target_size=Non
     data_gen_args = dict(rotation_range=5,
                          width_shift_range=0.05,
                          height_shift_range=0.05,
-                         zoom_range=0.05,
                          horizontal_flip=True)
     image_data_gen = ImageDataGenerator(**data_gen_args)
     mask_data_gen = ImageDataGenerator(**data_gen_args)
@@ -56,3 +59,26 @@ def test_data_generator(data_dir, images, batch_size, target_size=None):
             imgs.append(img_array)
         imgs = np.array(imgs)
         yield imgs
+
+
+def image_resize(in_dir, out_dir, resized_width, resized_height, format=None, save_postfix=None):
+    files = os.listdir(in_dir)
+    for f in files:
+        in_filename = in_dir + os.sep + f
+        if save_postfix is None:
+            out_filename = out_dir + os.sep + f
+        else:
+            out_filename = out_dir + os.sep + f.split(".")[0] + save_postfix
+        with Image.open(in_filename) as img:
+            resized_img = img.resize((resized_width, resized_height))
+            resized_img.save(out_filename, format)
+
+
+def resize_all_images():
+    image_resize(TRAIN_DIR, RESIZED_TRAIN_DIR, RESIZED_WIDTH, RESIZED_HEIGHT)
+    image_resize(TRAIN_MASKS_DIR, RESIZED_TRAIN_MASKS_DIR, RESIZED_WIDTH, RESIZED_HEIGHT)
+    image_resize(TEST_DIR, RESIZED_TEST_DIR, RESIZED_WIDTH, RESIZED_HEIGHT)
+
+
+if __name__ == '__main__':
+    resize_all_images()

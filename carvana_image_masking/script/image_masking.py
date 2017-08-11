@@ -15,20 +15,21 @@ from my_unet import UNet
 from rle import *
 
 callbacks = [EarlyStopping(monitor='val_dice_coef',
-                           patience=8,
+                           patience=4,
                            verbose=1,
-                           min_delta=1e-4,
+                           min_delta=0.0005,
                            mode='max'),
              ReduceLROnPlateau(monitor='val_dice_coef',
-                               factor=0.1,
-                               patience=4,
+                               factor=0.5,
+                               patience=2,
                                verbose=1,
-                               epsilon=1e-4,
+                               epsilon=0.0005,
                                mode='max'),
              ModelCheckpoint(monitor='val_dice_coef',
                              filepath=CHECKPOINT_DIR + '/best_weights.hdf5',
                              save_best_only=True,
                              save_weights_only=True,
+                             verbose=1,
                              mode='max'),
              TensorBoard(log_dir=LOG_DIR)]
 
@@ -37,7 +38,7 @@ def train():
     start_time = datetime.datetime.now()
 
     all_train_images = os.listdir(RESIZED_TRAIN_DIR)
-    train_images, validation_images = train_test_split(all_train_images, train_size=0.9, test_size=0.1, random_state=42)
+    train_images, validation_images = train_test_split(all_train_images, train_size=0.85, test_size=0.15, random_state=42)
 
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
@@ -45,8 +46,8 @@ def train():
     train_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=True)
     validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=False)
 
-    model = UNet(layers=6, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=32).create_unet_model()
-    model.compile(optimizer=SGD(lr=0.01, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
+    model = UNet(layers=LAYERS, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=FILTERS, num_classes=1).create_unet_model()
+    model.compile(optimizer=SGD(lr=0.01, decay=1e-6, momentum=0.9), loss=dice_loss, metrics=[dice_coef])
 
     steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
     validation_steps = len(validation_images) / TRAIN_BATCH_SIZE
@@ -57,10 +58,7 @@ def train():
                         callbacks=callbacks,
                         validation_data=validation_gen, validation_steps=validation_steps)
 
-    model.save_weights(WEIGHTS_FILE)
-    model_json_string = model.to_json()
-    with open(MODEL_FILE, 'w') as model_file:
-        model_file.write(model_json_string)
+    save_model(model, MODEL_FILE, WEIGHTS_FILE)
 
     end_time = datetime.datetime.now()
     cost_time = end_time - start_time
@@ -69,13 +67,20 @@ def train():
     return model
 
 
-def load_model():
+def save_model(model, model_file, weights_file):
+    model_json_string = model.to_json()
+    with open(model_file, 'w') as mf:
+        mf.write(model_json_string)
+    model.save_weights(weights_file)
+
+
+def load_model(model_file, weights_file):
     model_json_string = ""
-    with open(MODEL_FILE, 'r') as model_file:
-        for line in model_file:
+    with open(model_file, 'r') as mf:
+        for line in mf:
             model_json_string += line
     model = model_from_json(model_json_string)
-    model.load_weights(WEIGHTS_FILE)
+    model.load_weights(weights_file)
     return model
 
 
@@ -109,7 +114,7 @@ def predict_and_make_submission(model):
                 out_line = all_test_images[idx] + ',' + rle_str + '\n'
                 outfile.write(out_line)
 
-                if idx % 500 == 0:
+                if idx % 1000 == 0:
                     print "processed %d images" % idx
             i += PREDICT_BATCH_SIZE
     shell_cmd = "zip %s.zip %s" % (submission_file, submission_file)
@@ -122,8 +127,8 @@ def predict_and_make_submission(model):
 
 def main(argv):
     # resize_all_images()
-    # model = train()
-    model = load_model()
+    model = train()
+    # model = load_model(MODEL_FILE, WEIGHTS_FILE)
     predict_and_make_submission(model)
 
 
