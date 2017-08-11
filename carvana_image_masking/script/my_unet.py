@@ -8,13 +8,11 @@ from keras.models import Model
 
 
 class UNet(object):
-    def __init__(self, layers, input_shape, filters=64):
+    def __init__(self, layers, input_shape, filters=32, num_classes=1):
         self.__layers = layers
         self.__input_shape = input_shape
         self.__filters = filters
-
-    def create_unet_model(self):
-        return self.__unet(layers=self.__layers, input_shape=self.__input_shape, filters=self.__filters)
+        self.__num_classes = num_classes
 
     def __down(self, input_layer, filters, kernel_size=(3, 3), pool=True):
         conv1 = Conv2D(filters=filters, kernel_size=kernel_size, padding='same')(input_layer)
@@ -43,7 +41,7 @@ class UNet(object):
         act2 = Activation('relu')(bn2)
         return act2
 
-    def __unet(self, layers, input_shape, filters):
+    def __unet(self, layers, input_shape, filters, num_classes):
         inputs = Input(shape=input_shape)
         residuals = []
         input_layer = inputs
@@ -59,8 +57,12 @@ class UNet(object):
             filters /= 2
             input_layer = self.__up(residual=residuals[-(layer + 1)], input_layer=input_layer, filters=filters)
 
-        outputs = Conv2D(filters=1, kernel_size=(1, 1), activation='sigmoid')(input_layer)
+        outputs = Conv2D(filters=num_classes, kernel_size=(1, 1), activation='sigmoid')(input_layer)
 
         model = Model(inputs=inputs, outputs=outputs)
         model.summary()
         return model
+
+    def create_unet_model(self):
+        return self.__unet(layers=self.__layers, input_shape=self.__input_shape,
+                           filters=self.__filters, num_classes=self.__num_classes)
