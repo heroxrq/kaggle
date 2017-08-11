@@ -3,7 +3,7 @@ from keras.losses import binary_crossentropy
 
 
 def dice_coef(y_true, y_pred):
-    smooth = 1e-3
+    smooth = 0.001
 
     y_true = tf.round(tf.reshape(y_true, [-1]))
     y_pred = tf.round(tf.reshape(y_pred, [-1]))
@@ -13,5 +13,9 @@ def dice_coef(y_true, y_pred):
     return (2.0 * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
 
 
+def dice_loss(y_true, y_pred):
+    return 1 - dice_coef(y_true, y_pred)
+
+
 def bce_dice_loss(y_true, y_pred):
-    return binary_crossentropy(y_true, y_pred) + (1 - dice_coef(y_true, y_pred))
+    return binary_crossentropy(y_true, y_pred) + dice_loss(y_true, y_pred)
