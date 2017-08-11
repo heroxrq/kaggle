@@ -42,14 +42,14 @@ def train():
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
 
-    train_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, train_images, BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=True)
-    validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=False)
+    train_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=True)
+    validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=False)
 
     model = UNet(layers=6, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=32).create_unet_model()
     model.compile(optimizer=SGD(lr=0.01, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
 
-    steps_per_epoch = len(train_images) / BATCH_SIZE
-    validation_steps = len(validation_images) / BATCH_SIZE
+    steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
+    validation_steps = len(validation_images) / TRAIN_BATCH_SIZE
     print "steps_per_epoch:", steps_per_epoch
     print "validation_steps:", validation_steps
 
@@ -83,7 +83,7 @@ def predict_and_make_submission(model):
     start_time = datetime.datetime.now()
 
     all_test_images = os.listdir(RESIZED_TEST_DIR)
-    test_gen = test_data_generator(RESIZED_TEST_DIR, all_test_images, BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH))
+    test_gen = test_data_generator(RESIZED_TEST_DIR, all_test_images, PREDICT_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH))
 
     submission_file = SUBMISSION_DIR + "/submission-" + time.strftime("%Y%m%d%H%M%S") + ".csv"
     with open(submission_file, 'w') as outfile:
@@ -111,7 +111,7 @@ def predict_and_make_submission(model):
 
                 if idx % 500 == 0:
                     print "processed %d images" % idx
-            i += BATCH_SIZE
+            i += PREDICT_BATCH_SIZE
     shell_cmd = "zip %s.zip %s" % (submission_file, submission_file)
     os.system(shell_cmd)
 
@@ -122,8 +122,8 @@ def predict_and_make_submission(model):
 
 def main(argv):
     # resize_all_images()
-    model = train()
-    # model = load_model()
+    # model = train()
+    model = load_model()
     predict_and_make_submission(model)
 
 

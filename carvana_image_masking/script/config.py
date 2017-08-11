@@ -6,7 +6,8 @@ IMAGE_HEIGHT = 1280
 RESIZED_WIDTH = 256
 RESIZED_HEIGHT = 256
 
-BATCH_SIZE = 4
+TRAIN_BATCH_SIZE = 4
+PREDICT_BATCH_SIZE = 32
 EPOCHS = 5
 
 BASE_DIR = "/home/xrq/prog/kaggle/carvana_image_masking"
