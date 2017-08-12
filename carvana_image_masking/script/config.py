@@ -52,7 +52,7 @@ LOG_DIR = BASE_DIR + "/log"
 # model config
 # --------------------------------------------------
 TRAIN_BATCH_SIZE = 7
-PREDICT_BATCH_SIZE = 40
+PREDICT_BATCH_SIZE = 36
 EPOCHS = 30
 LAYERS = 6
 FILTERS = 32

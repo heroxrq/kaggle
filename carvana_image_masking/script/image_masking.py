@@ -17,13 +17,13 @@ from rle import *
 callbacks = [EarlyStopping(monitor='val_dice_coef',
                            patience=4,
                            verbose=1,
-                           min_delta=0.0005,
+                           min_delta=0.0001,
                            mode='max'),
              ReduceLROnPlateau(monitor='val_dice_coef',
                                factor=0.5,
                                patience=2,
                                verbose=1,
-                               epsilon=0.0005,
+                               epsilon=0.0001,
                                mode='max'),
              ModelCheckpoint(monitor='val_dice_coef',
                              filepath=BEST_WEIGHTS_FILE,
@@ -38,7 +38,7 @@ def train():
     start_time = datetime.datetime.now()
 
     all_train_images = os.listdir(RESIZED_TRAIN_DIR)
-    train_images, validation_images = train_test_split(all_train_images, train_size=0.8, test_size=0.2, random_state=42)
+    train_images, validation_images = train_test_split(all_train_images, train_size=0.9, test_size=0.1, random_state=42)
 
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
