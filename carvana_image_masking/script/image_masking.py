@@ -26,7 +26,7 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
                                epsilon=0.0005,
                                mode='max'),
              ModelCheckpoint(monitor='val_dice_coef',
-                             filepath=CHECKPOINT_DIR + '/best_weights.hdf5',
+                             filepath=BEST_WEIGHTS_FILE,
                              save_best_only=True,
                              save_weights_only=True,
                              verbose=1,
@@ -38,7 +38,7 @@ def train():
     start_time = datetime.datetime.now()
 
     all_train_images = os.listdir(RESIZED_TRAIN_DIR)
-    train_images, validation_images = train_test_split(all_train_images, train_size=0.85, test_size=0.15, random_state=42)
+    train_images, validation_images = train_test_split(all_train_images, train_size=0.8, test_size=0.2, random_state=42)
 
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
@@ -127,8 +127,8 @@ def predict_and_make_submission(model):
 
 def main(argv):
     # resize_all_images()
-    model = train()
-    # model = load_model(MODEL_FILE, WEIGHTS_FILE)
+    train()
+    model = load_model(MODEL_FILE, BEST_WEIGHTS_FILE)
     predict_and_make_submission(model)
 
 
