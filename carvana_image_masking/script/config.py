@@ -37,16 +37,18 @@ RESIZED_TEST_DIR = DATASET_DIR + "/resized_test"
 
 SUBMISSION_DIR = DATASET_DIR + "/submission"
 
-TMP_DIR = BASE_DIR + "/tmp"
+MODEL_DIR = BASE_DIR + "/model"
 
-CHECKPOINT_DIR = TMP_DIR + "/checkpoint"
+CHECKPOINT_DIR = MODEL_DIR + "/checkpoint"
 BEST_WEIGHTS_FILE = CHECKPOINT_DIR + '/best_weights.hdf5'
 
-MODEL_DIR = TMP_DIR + "/model"
+MODEL_DIR = MODEL_DIR + "/model"
 MODEL_FILE = MODEL_DIR + "/model.json"
 WEIGHTS_FILE = MODEL_DIR + "/weights.hdf5"
 
 LOG_DIR = BASE_DIR + "/log"
+TF_LOG_DIR = LOG_DIR + "/tf_log"
+PY_LOG_DIR = LOG_DIR + "/py_log"
 
 # --------------------------------------------------
 # model config
@@ -58,8 +60,8 @@ LAYERS = 6
 FILTERS = 32
 
 if SERVER:
-    TRAIN_BATCH_SIZE = 2
-    PREDICT_BATCH_SIZE = 2
-    EPOCHS = 20
+    TRAIN_BATCH_SIZE = 3
+    PREDICT_BATCH_SIZE = 12
+    EPOCHS = 30
     LAYERS = 8
     FILTERS = 8

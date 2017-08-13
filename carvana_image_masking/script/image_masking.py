@@ -15,7 +15,7 @@ from my_unet import UNet
 from rle import *
 
 callbacks = [EarlyStopping(monitor='val_dice_coef',
-                           patience=4,
+                           patience=5,
                            verbose=1,
                            min_delta=0.0001,
                            mode='max'),
@@ -24,6 +24,7 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
                                patience=2,
                                verbose=1,
                                epsilon=0.0001,
+                               cooldown=1,
                                mode='max'),
              ModelCheckpoint(monitor='val_dice_coef',
                              filepath=BEST_WEIGHTS_FILE,
@@ -31,14 +32,14 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
                              save_weights_only=True,
                              verbose=1,
                              mode='max'),
-             TensorBoard(log_dir=LOG_DIR)]
+             TensorBoard(log_dir=TF_LOG_DIR)]
 
 
 def train():
     start_time = datetime.datetime.now()
 
     all_train_images = os.listdir(RESIZED_TRAIN_DIR)
-    train_images, validation_images = train_test_split(all_train_images, train_size=0.9, test_size=0.1, random_state=42)
+    train_images, validation_images = train_test_split(all_train_images, train_size=0.8, test_size=0.2, random_state=42)
 
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
