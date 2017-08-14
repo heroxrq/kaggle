@@ -12,8 +12,8 @@ SERVER = False
 IMAGE_WIDTH = 1918
 IMAGE_HEIGHT = 1280
 
-RESIZED_WIDTH = 256
-RESIZED_HEIGHT = 256
+RESIZED_WIDTH = 480
+RESIZED_HEIGHT = 320
 
 if SERVER:
     RESIZED_WIDTH = 1920
@@ -53,8 +53,8 @@ PY_LOG_DIR = LOG_DIR + "/py_log"
 # --------------------------------------------------
 # model config
 # --------------------------------------------------
-TRAIN_BATCH_SIZE = 7
-PREDICT_BATCH_SIZE = 36
+TRAIN_BATCH_SIZE = 3
+PREDICT_BATCH_SIZE = 12
 EPOCHS = 30
 LAYERS = 6
 FILTERS = 32
