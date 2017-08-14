@@ -32,7 +32,8 @@ TRAIN_MASKS_CSV = DATASET_DIR + "/train_masks.csv"
 TEST_DIR = DATASET_DIR + "/test"
 
 RESIZED_TRAIN_DIR = DATASET_DIR + "/resized_train"
-RESIZED_TRAIN_MASKS_DIR = DATASET_DIR + "/resized_train_masks"
+# RESIZED_TRAIN_MASKS_DIR = DATASET_DIR + "/resized_train_masks"
+RESIZED_TRAIN_MASKS_DIR = TRAIN_MASKS_DIR
 RESIZED_TEST_DIR = DATASET_DIR + "/resized_test"
 
 SUBMISSION_DIR = DATASET_DIR + "/submission"
@@ -53,8 +54,8 @@ PY_LOG_DIR = LOG_DIR + "/py_log"
 # --------------------------------------------------
 # model config
 # --------------------------------------------------
-TRAIN_BATCH_SIZE = 3
-PREDICT_BATCH_SIZE = 12
+TRAIN_BATCH_SIZE = 1
+PREDICT_BATCH_SIZE = 8
 EPOCHS = 30
 LAYERS = 6
 FILTERS = 32

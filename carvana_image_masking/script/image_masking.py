@@ -44,8 +44,8 @@ def train():
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
 
-    train_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=True)
-    validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH), augment=False)
+    train_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, augment=True)
+    validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, augment=False)
 
     model = UNet(layers=LAYERS, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=FILTERS, num_classes=1).create_unet_model()
     model.compile(optimizer=SGD(lr=0.01, decay=1e-6, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
