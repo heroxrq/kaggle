@@ -12,12 +12,8 @@ SERVER = False
 IMAGE_WIDTH = 1918
 IMAGE_HEIGHT = 1280
 
-RESIZED_WIDTH = 480
-RESIZED_HEIGHT = 320
-
-if SERVER:
-    RESIZED_WIDTH = 1920
-    RESIZED_HEIGHT = 1280
+RESIZED_WIDTH = 1920
+RESIZED_HEIGHT = 1280
 
 # --------------------------------------------------
 # path config
@@ -40,12 +36,8 @@ SUBMISSION_DIR = DATASET_DIR + "/submission"
 
 MODEL_DIR = BASE_DIR + "/model"
 
-CHECKPOINT_DIR = MODEL_DIR + "/checkpoint"
-BEST_WEIGHTS_FILE = CHECKPOINT_DIR + '/best_weights.hdf5'
-
-MODEL_DIR = MODEL_DIR + "/model"
+BEST_WEIGHTS_FILE = MODEL_DIR + '/best_weights.hdf5'
 MODEL_FILE = MODEL_DIR + "/model.json"
-WEIGHTS_FILE = MODEL_DIR + "/weights.hdf5"
 
 LOG_DIR = BASE_DIR + "/log"
 TF_LOG_DIR = LOG_DIR + "/tf_log"
@@ -55,10 +47,10 @@ PY_LOG_DIR = LOG_DIR + "/py_log"
 # model config
 # --------------------------------------------------
 TRAIN_BATCH_SIZE = 1
-PREDICT_BATCH_SIZE = 8
+PREDICT_BATCH_SIZE = 4
 EPOCHS = 30
-LAYERS = 6
-FILTERS = 32
+LAYERS = 7
+FILTERS = 4
 
 if SERVER:
     TRAIN_BATCH_SIZE = 3

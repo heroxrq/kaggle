@@ -20,7 +20,7 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
                            min_delta=0.0001,
                            mode='max'),
              ReduceLROnPlateau(monitor='val_dice_coef',
-                               factor=0.5,
+                               factor=0.2,
                                patience=2,
                                verbose=1,
                                epsilon=0.0001,
@@ -47,8 +47,9 @@ def train():
     train_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, augment=True)
     validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, augment=False)
 
-    model = UNet(layers=LAYERS, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=FILTERS, num_classes=1).create_unet_model()
-    model.compile(optimizer=SGD(lr=0.01, decay=1e-6, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
+    model = UNet(layers=LAYERS, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=FILTERS, num_classes=1, shrink=True).create_unet_model()
+    model.compile(optimizer=SGD(lr=0.01, decay=1e-4, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
+    save_model(model, MODEL_FILE)
 
     steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
     validation_steps = len(validation_images) / TRAIN_BATCH_SIZE
@@ -59,8 +60,6 @@ def train():
                         callbacks=callbacks,
                         validation_data=validation_gen, validation_steps=validation_steps)
 
-    save_model(model, MODEL_FILE, WEIGHTS_FILE)
-
     end_time = datetime.datetime.now()
     cost_time = end_time - start_time
     print "train cost time:", cost_time
@@ -68,11 +67,10 @@ def train():
     return model
 
 
-def save_model(model, model_file, weights_file):
+def save_model(model, model_file):
     model_json_string = model.to_json()
     with open(model_file, 'w') as mf:
         mf.write(model_json_string)
-    model.save_weights(weights_file)
 
 
 def load_model(model_file, weights_file):
@@ -89,7 +87,7 @@ def predict_and_make_submission(model):
     start_time = datetime.datetime.now()
 
     all_test_images = os.listdir(RESIZED_TEST_DIR)
-    test_gen = test_data_generator(RESIZED_TEST_DIR, all_test_images, PREDICT_BATCH_SIZE, target_size=(RESIZED_HEIGHT, RESIZED_WIDTH))
+    test_gen = test_data_generator(RESIZED_TEST_DIR, all_test_images, PREDICT_BATCH_SIZE)
 
     submission_file = SUBMISSION_DIR + "/submission-" + time.strftime("%Y%m%d%H%M%S") + ".csv"
     with open(submission_file, 'w') as outfile:
@@ -99,15 +97,11 @@ def predict_and_make_submission(model):
         for batch in test_gen:
             res_array = model.predict_on_batch(batch)
 
-            res_array = np.reshape(res_array, (len(res_array), RESIZED_HEIGHT, RESIZED_WIDTH))
+            res_array = np.reshape(res_array, (len(res_array), IMAGE_HEIGHT, IMAGE_WIDTH))
             for k in xrange(len(res_array)):
                 # rle
-                img = Image.fromarray(res_array[k] * 255.0, 'F')
-                img = img.resize((IMAGE_WIDTH, IMAGE_HEIGHT))
-                img = np.array(img)
-                img[img <= 127.5] = 0
-                img[img > 127.5] = 1
-                img = img.astype(int)
+                img = res_array[k]
+                img = np.where(img > 0.5, 1, 0)
                 rle_str = run_length_encoding(img)
 
                 # make submission
