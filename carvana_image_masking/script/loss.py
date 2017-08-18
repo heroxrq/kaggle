@@ -1,16 +1,16 @@
-import keras.backend as K
+import tensorflow as tf
 from keras.losses import binary_crossentropy
 
 
 def dice_coef(y_true, y_pred):
     smooth = 0.001
 
-    y_true_f = K.flatten(y_true)
-    y_pred_f = K.flatten(y_pred)
+    y_true = tf.round(tf.reshape(y_true, [-1]))
+    y_pred = tf.round(tf.reshape(y_pred, [-1]))
 
-    intersection = K.sum(y_true_f * y_pred_f)
+    intersection = tf.reduce_sum(y_true * y_pred)
 
-    return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
+    return (2.0 * intersection + smooth) / (tf.reduce_sum(y_true) + tf.reduce_sum(y_pred) + smooth)
 
 
 def dice_loss(y_true, y_pred):
