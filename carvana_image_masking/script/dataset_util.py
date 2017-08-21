@@ -15,9 +15,9 @@ def load_img_array(image_name, grayscale=False, target_size=None):
 
 
 def random_hue_saturation_value(image,
-                                hue_shift_limit=(-50, 50),
-                                sat_shift_limit=(-5, 5),
-                                val_shift_limit=(-15, 15),
+                                hue_shift_limit=(-15, 15),
+                                sat_shift_limit=(-0.025, 0.025),
+                                val_shift_limit=(-25, 25),
                                 u=0.5):
 
     if np.random.random() < u:
@@ -64,7 +64,7 @@ def data_augmentation(image, mask, seed):
 
 
 def train_data_generator(data_dir, mask_dir, images, batch_size, target_size=None, augment=False, seed=1):
-    batch_cnt = 0
+    img_cnt = 0
     while True:
         idx = np.random.choice(len(images), batch_size)
         image_batch = []
@@ -79,12 +79,12 @@ def train_data_generator(data_dir, mask_dir, images, batch_size, target_size=Non
             mask_array = load_img_array(mask_name, grayscale=True, target_size=target_size)
 
             if augment:
-                image_array, mask_array = data_augmentation(image_array, mask_array, seed + batch_cnt)
+                image_array, mask_array = data_augmentation(image_array, mask_array, seed + img_cnt)
 
             image_batch.append(image_array)
             mask_batch.append(mask_array)
 
-            batch_cnt += 1
+            img_cnt += 1
         image_batch = np.array(image_batch, np.float32)
         mask_batch = np.array(mask_batch, np.float32)
         yield image_batch, mask_batch
