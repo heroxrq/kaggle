@@ -3,25 +3,25 @@ import numpy as np
 import os
 import sys
 import time
-from PIL import Image
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
 from keras.models import model_from_json
 from keras.optimizers import SGD
 from sklearn.model_selection import train_test_split
 
-from dataset_util import *
-from loss import *
+from config import *
+from dataset_util import train_data_generator, test_data_generator
+from loss import dice_coef, bce_dice_loss
 from my_unet import UNet
-from rle import *
+from rle import run_length_encoding
 
 callbacks = [EarlyStopping(monitor='val_dice_coef',
-                           patience=5,
+                           patience=8,
                            verbose=1,
                            min_delta=0.0001,
                            mode='max'),
              ReduceLROnPlateau(monitor='val_dice_coef',
-                               factor=0.2,
-                               patience=2,
+                               factor=0.5,
+                               patience=3,
                                verbose=1,
                                epsilon=0.0001,
                                cooldown=1,
@@ -38,17 +38,17 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
 def train():
     start_time = datetime.datetime.now()
 
-    all_train_images = os.listdir(RESIZED_TRAIN_DIR)
+    all_train_images = os.listdir(INPUT_TRAIN_DIR)
     train_images, validation_images = train_test_split(all_train_images, train_size=0.8, test_size=0.2, random_state=42)
 
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
 
-    train_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, augment=True)
-    validation_gen = train_data_generator(RESIZED_TRAIN_DIR, RESIZED_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, augment=False)
+    train_gen = train_data_generator(INPUT_TRAIN_DIR, INPUT_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, augment=True)
+    validation_gen = train_data_generator(INPUT_TRAIN_DIR, INPUT_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, augment=False)
 
-    model = UNet(layers=LAYERS, input_shape=(RESIZED_HEIGHT, RESIZED_WIDTH, 3), filters=FILTERS, num_classes=1, shrink=True).create_unet_model()
-    model.compile(optimizer=SGD(lr=0.01, decay=1e-4, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
+    model = UNet(layers=LAYERS, input_shape=(INPUT_HEIGHT, INPUT_WIDTH, 3), filters=FILTERS, num_classes=1, shrink=True).create_unet_model()
+    model.compile(optimizer=SGD(lr=0.01, decay=1e-5, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
     save_model(model, MODEL_FILE)
 
     steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
@@ -86,8 +86,8 @@ def load_model(model_file, weights_file):
 def predict_and_make_submission(model):
     start_time = datetime.datetime.now()
 
-    all_test_images = os.listdir(RESIZED_TEST_DIR)
-    test_gen = test_data_generator(RESIZED_TEST_DIR, all_test_images, PREDICT_BATCH_SIZE)
+    all_test_images = os.listdir(INPUT_TEST_DIR)
+    test_gen = test_data_generator(INPUT_TEST_DIR, all_test_images, PREDICT_BATCH_SIZE)
 
     submission_file = SUBMISSION_DIR + "/submission-" + time.strftime("%Y%m%d%H%M%S") + ".csv"
     with open(submission_file, 'w') as outfile:
@@ -97,7 +97,7 @@ def predict_and_make_submission(model):
         for batch in test_gen:
             res_array = model.predict_on_batch(batch)
 
-            res_array = np.reshape(res_array, (len(res_array), IMAGE_HEIGHT, IMAGE_WIDTH))
+            res_array = np.reshape(res_array, (len(res_array), OUTPUT_HEIGHT, OUTPUT_WIDTH))
             for k in xrange(len(res_array)):
                 # rle
                 img = res_array[k]

@@ -11,7 +11,7 @@ def run_length_encoding(mask_image):
     pixels[-1] = 0
     runs = np.where(pixels[1:] != pixels[:-1])[0] + 2
     runs[1::2] = runs[1::2] - runs[:-1:2]
-    rle = ' '.join(str(x) for x in runs)
+    rle = ' '.join([str(x) for x in runs])
     return rle
 
 
