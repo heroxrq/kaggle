@@ -5,7 +5,7 @@ import sys
 import time
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
 from keras.models import model_from_json
-from keras.optimizers import SGD
+from keras.optimizers import RMSprop
 from sklearn.model_selection import train_test_split
 
 from config import *
@@ -20,7 +20,7 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
                            min_delta=0.0001,
                            mode='max'),
              ReduceLROnPlateau(monitor='val_dice_coef',
-                               factor=0.5,
+                               factor=0.2,
                                patience=3,
                                verbose=1,
                                epsilon=0.0001,
@@ -48,7 +48,7 @@ def train():
     validation_gen = train_data_generator(INPUT_TRAIN_DIR, INPUT_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, augment=False)
 
     model = UNet(layers=LAYERS, input_shape=(INPUT_HEIGHT, INPUT_WIDTH, 3), filters=FILTERS, num_classes=1, shrink=True).create_unet_model()
-    model.compile(optimizer=SGD(lr=0.01, decay=1e-5, momentum=0.9), loss=bce_dice_loss, metrics=[dice_coef])
+    model.compile(optimizer=RMSprop(lr=0.0005), loss=bce_dice_loss, metrics=[dice_coef])
     save_model(model, MODEL_FILE)
 
     steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
