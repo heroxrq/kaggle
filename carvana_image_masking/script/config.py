@@ -56,14 +56,14 @@ PY_LOG_DIR = LOG_DIR + "/py_log"
 # model config
 # --------------------------------------------------
 TRAIN_BATCH_SIZE = 1
-PREDICT_BATCH_SIZE = 2
-EPOCHS = 3
+PREDICT_BATCH_SIZE = 1
+EPOCHS = 1
 LAYERS = 8
 FILTERS = 4
 
 if SERVER:
     TRAIN_BATCH_SIZE = 3
-    PREDICT_BATCH_SIZE = 12
-    EPOCHS = 30
+    PREDICT_BATCH_SIZE = 10
+    EPOCHS = 50
     LAYERS = 8
     FILTERS = 8
