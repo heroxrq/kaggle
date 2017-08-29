@@ -18,7 +18,7 @@ def random_hue_saturation_value(image,
                                 hue_shift_limit=(-15, 15),
                                 sat_shift_limit=(-0.025, 0.025),
                                 val_shift_limit=(-25, 25),
-                                u=0.5):
+                                u=0.25):
 
     if np.random.random() < u:
         image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -42,7 +42,7 @@ def random_transform(image,
                      width_shift_range=0.05,
                      height_shift_range=0.05,
                      horizontal_flip=True,
-                     u=0.5):
+                     u=0.25):
     if np.random.random() < u:
         data_gen_args = dict(rotation_range=rotation_range,
                              width_shift_range=width_shift_range,
