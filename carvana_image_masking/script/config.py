@@ -3,7 +3,6 @@ import os
 # --------------------------------------------------
 # env config
 # --------------------------------------------------
-DEBUG = False
 SERVER = False
 
 # --------------------------------------------------
@@ -45,6 +44,7 @@ SUBMISSION_DIR = DATASET_DIR + "/submission"
 
 MODEL_DIR = BASE_DIR + "/model"
 
+BEST_MODEL_FILE = MODEL_DIR + '/best_model.hdf5'
 BEST_WEIGHTS_FILE = MODEL_DIR + '/best_weights.hdf5'
 MODEL_FILE = MODEL_DIR + "/model.json"
 
@@ -63,7 +63,7 @@ FILTERS = 4
 
 if SERVER:
     TRAIN_BATCH_SIZE = 3
-    PREDICT_BATCH_SIZE = 10
+    PREDICT_BATCH_SIZE = 8
     EPOCHS = 50
     LAYERS = 8
     FILTERS = 8
