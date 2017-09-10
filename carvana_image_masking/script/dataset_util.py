@@ -42,7 +42,7 @@ def random_transform(image,
                      width_shift_range=0.05,
                      height_shift_range=0.05,
                      horizontal_flip=True,
-                     u=0.25):
+                     u=0.5):
     if np.random.random() < u:
         data_gen_args = dict(rotation_range=rotation_range,
                              width_shift_range=width_shift_range,

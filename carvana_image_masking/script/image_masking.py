@@ -1,130 +1,14 @@
-import datetime
-import numpy as np
-import os
 import sys
-import time
-from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
-from keras.models import model_from_json
-from keras.optimizers import RMSprop
-from sklearn.model_selection import train_test_split
 
-from config import *
-from dataset_util import train_data_generator, test_data_generator
-from loss import dice_coef, bce_dice_loss
-from my_unet import UNet
-from rle import run_length_encoding
-
-callbacks = [EarlyStopping(monitor='val_dice_coef',
-                           patience=8,
-                           verbose=1,
-                           min_delta=0.0001,
-                           mode='max'),
-             ReduceLROnPlateau(monitor='val_dice_coef',
-                               factor=0.2,
-                               patience=3,
-                               verbose=1,
-                               epsilon=0.0001,
-                               cooldown=1,
-                               mode='max'),
-             ModelCheckpoint(monitor='val_dice_coef',
-                             filepath=BEST_WEIGHTS_FILE,
-                             save_best_only=True,
-                             save_weights_only=True,
-                             verbose=1,
-                             mode='max'),
-             TensorBoard(log_dir=TF_LOG_DIR)]
-
-
-def train():
-    start_time = datetime.datetime.now()
-
-    all_train_images = os.listdir(INPUT_TRAIN_DIR)
-    train_images, validation_images = train_test_split(all_train_images, train_size=0.8, test_size=0.2, random_state=42)
-
-    print "Number of train_images: {}".format(len(train_images))
-    print "Number of validation_images: {}".format(len(validation_images))
-
-    train_gen = train_data_generator(INPUT_TRAIN_DIR, INPUT_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, augment=True)
-    validation_gen = train_data_generator(INPUT_TRAIN_DIR, INPUT_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, augment=False)
-
-    model = UNet(layers=LAYERS, input_shape=(INPUT_HEIGHT, INPUT_WIDTH, 3), filters=FILTERS, num_classes=1, shrink=True).create_unet_model()
-    model.compile(optimizer=RMSprop(lr=0.0005), loss=bce_dice_loss, metrics=[dice_coef])
-    save_model(model, MODEL_FILE)
-
-    steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
-    validation_steps = len(validation_images) / TRAIN_BATCH_SIZE
-    print "steps_per_epoch:", steps_per_epoch
-    print "validation_steps:", validation_steps
-
-    model.fit_generator(train_gen, steps_per_epoch=steps_per_epoch, epochs=EPOCHS,
-                        callbacks=callbacks,
-                        validation_data=validation_gen, validation_steps=validation_steps)
-
-    end_time = datetime.datetime.now()
-    cost_time = end_time - start_time
-    print "train cost time:", cost_time
-
-    return model
-
-
-def save_model(model, model_file):
-    model_json_string = model.to_json()
-    with open(model_file, 'w') as mf:
-        mf.write(model_json_string)
-
-
-def load_model(model_file, weights_file):
-    model_json_string = ""
-    with open(model_file, 'r') as mf:
-        for line in mf:
-            model_json_string += line
-    model = model_from_json(model_json_string)
-    model.load_weights(weights_file)
-    return model
-
-
-def predict_and_make_submission(model):
-    start_time = datetime.datetime.now()
-
-    all_test_images = os.listdir(INPUT_TEST_DIR)
-    test_gen = test_data_generator(INPUT_TEST_DIR, all_test_images, PREDICT_BATCH_SIZE)
-
-    submission_file = SUBMISSION_DIR + "/submission-" + time.strftime("%Y%m%d%H%M%S") + ".csv"
-    with open(submission_file, 'w') as outfile:
-        outfile.write('img,rle_mask\n')
-
-        i = 0
-        for batch in test_gen:
-            res_array = model.predict_on_batch(batch)
-
-            res_array = np.reshape(res_array, (len(res_array), OUTPUT_HEIGHT, OUTPUT_WIDTH))
-            for k in xrange(len(res_array)):
-                # rle
-                img = res_array[k]
-                img = np.where(img > 0.5, 1, 0)
-                rle_str = run_length_encoding(img)
-
-                # make submission
-                idx = i + k
-                out_line = all_test_images[idx] + ',' + rle_str + '\n'
-                outfile.write(out_line)
-
-                if idx % 1000 == 0:
-                    print "processed %d images" % idx
-            i += PREDICT_BATCH_SIZE
-    shell_cmd = "zip %s.zip %s" % (submission_file, submission_file)
-    os.system(shell_cmd)
-
-    end_time = datetime.datetime.now()
-    cost_time = end_time - start_time
-    print "predict cost time:", cost_time
+from dataset_util import *
+from predict import *
+from train import *
 
 
 def main(argv):
-    # resize_all_images()
+    # resize_all_images()  # This is only needed for the first time.
     train()
-    model = load_model(MODEL_FILE, BEST_WEIGHTS_FILE)
-    predict_and_make_submission(model)
+    predict_and_make_submission()
 
 
 if __name__ == '__main__':
