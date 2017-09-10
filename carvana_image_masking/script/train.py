@@ -22,9 +22,9 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
                                cooldown=1,
                                mode='max'),
              ModelCheckpoint(monitor='val_dice_coef',
-                             filepath=BEST_MODEL_FILE,
+                             filepath=BEST_WEIGHTS_FILE,
                              save_best_only=True,
-                             save_weights_only=False,
+                             save_weights_only=True,
                              verbose=1,
                              mode='max'),
              TensorBoard(log_dir=TF_LOG_DIR)]
@@ -44,6 +44,7 @@ def train():
 
     model = UNet(layers=LAYERS, input_shape=(INPUT_HEIGHT, INPUT_WIDTH, 3), filters=FILTERS, num_classes=1, shrink=True).create_unet_model()
     model.compile(optimizer=RMSprop(lr=0.0001), loss=weighted_bce_dice_loss, metrics=[dice_coef])
+    save_model(model, MODEL_FILE)
 
     steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
     validation_steps = len(validation_images) / TRAIN_BATCH_SIZE

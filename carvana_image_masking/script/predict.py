@@ -22,7 +22,7 @@ def load_model(model_file, weights_file):
 def predict_and_make_submission():
     start_time = datetime.datetime.now()
 
-    model = models.load_model(BEST_MODEL_FILE)
+    model = load_model(MODEL_FILE, BEST_WEIGHTS_FILE)
 
     all_test_images = os.listdir(INPUT_TEST_DIR)
     test_gen = test_data_generator(INPUT_TEST_DIR, all_test_images, PREDICT_BATCH_SIZE)
