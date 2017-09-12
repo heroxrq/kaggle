@@ -10,16 +10,16 @@ from loss import dice_coef, weighted_bce_dice_loss
 from my_unet import UNet
 
 callbacks = [EarlyStopping(monitor='val_dice_coef',
-                           patience=8,
+                           patience=10,
                            verbose=1,
                            min_delta=0.0001,
                            mode='max'),
              ReduceLROnPlateau(monitor='val_dice_coef',
-                               factor=0.5,
+                               factor=0.3,
                                patience=3,
                                verbose=1,
                                epsilon=0.0001,
-                               cooldown=1,
+                               cooldown=0,
                                mode='max'),
              ModelCheckpoint(monitor='val_dice_coef',
                              filepath=BEST_WEIGHTS_FILE,
@@ -34,7 +34,7 @@ def train():
     start_time = datetime.datetime.now()
 
     all_train_images = os.listdir(INPUT_TRAIN_DIR)
-    train_images, validation_images = train_test_split(all_train_images, train_size=0.9, test_size=0.1, random_state=42)
+    train_images, validation_images = train_test_split(all_train_images, train_size=0.8, test_size=0.2, random_state=42)
 
     print "Number of train_images: {}".format(len(train_images))
     print "Number of validation_images: {}".format(len(validation_images))
@@ -42,8 +42,13 @@ def train():
     train_gen = train_data_generator(INPUT_TRAIN_DIR, INPUT_TRAIN_MASKS_DIR, train_images, TRAIN_BATCH_SIZE, augment=True)
     validation_gen = train_data_generator(INPUT_TRAIN_DIR, INPUT_TRAIN_MASKS_DIR, validation_images, TRAIN_BATCH_SIZE, augment=False)
 
-    model = UNet(layers=LAYERS, input_shape=(INPUT_HEIGHT, INPUT_WIDTH, 3), filters=FILTERS, num_classes=1, shrink=True).create_unet_model()
-    model.compile(optimizer=RMSprop(lr=0.0001), loss=weighted_bce_dice_loss, metrics=[dice_coef])
+    model = UNet(layers=LAYERS,
+                 input_shape=(INPUT_HEIGHT, INPUT_WIDTH, 3),
+                 filters=FILTERS,
+                 num_classes=1,
+                 shrink=True,
+                 activation='elu').create_unet_model()
+    model.compile(optimizer=RMSprop(lr=0.0005), loss=weighted_bce_dice_loss, metrics=[dice_coef])
     save_model(model, MODEL_FILE)
 
     steps_per_epoch = len(train_images) / TRAIN_BATCH_SIZE
