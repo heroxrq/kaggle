@@ -15,7 +15,7 @@ callbacks = [EarlyStopping(monitor='val_dice_coef',
                            min_delta=0.0001,
                            mode='max'),
              ReduceLROnPlateau(monitor='val_dice_coef',
-                               factor=0.3,
+                               factor=0.5,
                                patience=3,
                                verbose=1,
                                epsilon=0.0001,
@@ -47,7 +47,7 @@ def train():
                  filters=FILTERS,
                  num_classes=1,
                  shrink=True,
-                 activation='elu').create_unet_model()
+                 activation='relu').create_unet_model()
     model.compile(optimizer=RMSprop(lr=0.0005), loss=weighted_bce_dice_loss, metrics=[dice_coef])
     save_model(model, MODEL_FILE)
 
