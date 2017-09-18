@@ -7,7 +7,7 @@ DATE = datetime.datetime.now().strftime('%Y-%m-%d')
 # --------------------------------------------------
 # path config
 # --------------------------------------------------
-DATASET_DIR = "/media/xrq/Elements/dataset/kaggle/cdiscount_image_classification/dataset"
+DATASET_DIR = "/home/xierenqiang/dataset/kaggle/cdiscount_image_classification_challenge/dataset"
 
 TRAIN_BSON_FILE = DATASET_DIR + "/train.bson"
 TEST_BSON_FILE = DATASET_DIR + "/test.bson"
@@ -37,7 +37,6 @@ TF_LOG_DIR = CUR_LOG_DIR + "/tf_log"
 PY_LOG_DIR = CUR_LOG_DIR + "/py_log"
 
 mkdir_if_not_exist(CUR_MODEL_DIR)
-mkdir_if_not_exist(CUR_LOG_DIR)
 mkdir_if_not_exist(TF_LOG_DIR)
 
 # --------------------------------------------------
@@ -55,12 +54,12 @@ INPUT_HEIGHT = IMAGE_HEIGHT
 SEED = 11
 FC_SIZE = 8192
 NUM_CLASSES = 5270
-NUM_TRAIN_IMGS = 12000000
-NUM_VALID_IMGS = 1200000
+NUM_TRAIN_IMGS = 11131442
+NUM_VALID_IMGS = 1239851
 
-TRAIN_BATCH_SIZE = 2
-VALID_BATCH_SIZE = 5
-PREDICT_BATCH_SIZE = 5
+TRAIN_BATCH_SIZE = 4
+VALID_BATCH_SIZE = 8
+PREDICT_BATCH_SIZE = 8
 
 EPOCHS1 = 3
 EPOCHS2 = 2
