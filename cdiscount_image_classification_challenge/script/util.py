@@ -5,7 +5,7 @@ from keras import models
 
 def mkdir_if_not_exist(dir_):
     if not os.path.isdir(dir_):
-        os.mkdir(dir_)
+        os.makedirs(dir_)
 
 
 def save_model(model, model_file):
