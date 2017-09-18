@@ -1,3 +1,5 @@
+import tensorflow as tf
+from keras import backend as K
 from keras.applications.inception_v3 import InceptionV3
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint, TensorBoard
 from keras.layers import Dense, GlobalAveragePooling2D
@@ -7,6 +9,14 @@ from keras.preprocessing.image import ImageDataGenerator
 
 from config import *
 from util import save_model
+
+# --------------------------------------------------
+# gpu config
+# --------------------------------------------------
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)
+K.set_session(sess)
 
 # --------------------------------------------------
 # prepare data

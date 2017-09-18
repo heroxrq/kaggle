@@ -18,6 +18,6 @@ $PYTHON3 gen_imgs_from_bson.py \
 $DATASET_DIR \
 $DATASET_DIR/train_bson_transform/train \
 $DATASET_DIR/train_bson_transform/valid \
->$PY_LOG 2>&1 &
+>$PY_LOG 2>&1
 
-#$PYTHON2 train.py >>$PY_LOG 2>&1
+$PYTHON2 train.py >>$PY_LOG 2>&1 &
