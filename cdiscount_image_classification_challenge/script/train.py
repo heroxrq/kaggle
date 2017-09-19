@@ -95,7 +95,8 @@ save_model(model, MODEL_FILE)
 # train the model on the new data for a few epochs
 model.fit_generator(generator=train_generator, steps_per_epoch=steps_per_epoch, epochs=EPOCHS1,
                     callbacks=callbacks,
-                    validation_data=validation_generator, validation_steps=validation_steps)
+                    validation_data=validation_generator, validation_steps=validation_steps,
+                    workers=4, use_multiprocessing=True)
 
 # at this point, the top layers are well trained and we can start fine-tuning
 # convolutional layers from inception V3. We will freeze the bottom N layers
@@ -121,5 +122,6 @@ model.compile(optimizer=SGD(lr=LR2, momentum=0.9), loss='categorical_crossentrop
 # alongside the top Dense layers
 model.fit_generator(generator=train_generator, steps_per_epoch=steps_per_epoch, epochs=EPOCHS2,
                     callbacks=callbacks,
-                    validation_data=validation_generator, validation_steps=validation_steps)
+                    validation_data=validation_generator, validation_steps=validation_steps,
+                    workers=4, use_multiprocessing=True)
 save_model(model, MODEL_FILE)
