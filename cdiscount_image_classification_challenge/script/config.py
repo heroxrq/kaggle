@@ -30,6 +30,7 @@ CUR_MODEL_DIR = MODEL_DIR + "/" + DATE
 BEST_MODEL_FILE = CUR_MODEL_DIR + '/best_model.hdf5'
 BEST_WEIGHTS_FILE = CUR_MODEL_DIR + '/best_weights.hdf5'
 MODEL_FILE = CUR_MODEL_DIR + "/model.json"
+CLASS_INDICES_FILE = CUR_MODEL_DIR + "/class_indices.json"
 
 LOG_DIR = BASE_DIR + "/log"
 CUR_LOG_DIR = LOG_DIR + "/" + DATE

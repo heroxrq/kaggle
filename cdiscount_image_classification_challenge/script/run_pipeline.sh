@@ -13,11 +13,12 @@ mkdir -p $PY_LOG_DIR
 
 PY_LOG="$PY_LOG_DIR/log.$DATE"
 
-$PYTHON3 gen_imgs_from_bson.py \
-10 \
-$DATASET_DIR \
-$DATASET_DIR/train_bson_transform/train \
-$DATASET_DIR/train_bson_transform/valid \
->$PY_LOG 2>&1
+#$PYTHON3 gen_imgs_from_bson.py \
+#10 \
+#$DATASET_DIR \
+#$DATASET_DIR/train_bson_transform/train \
+#$DATASET_DIR/train_bson_transform/valid \
+#>$PY_LOG 2>&1
 
-$PYTHON2 train.py >>$PY_LOG 2>&1 &
+$PYTHON2 train.py >>$PY_LOG 2>&1
+$PYTHON2 predict.py >>$PY_LOG 2>&1
