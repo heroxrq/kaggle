@@ -1,3 +1,4 @@
+import json
 import os
 
 from keras import models
@@ -6,6 +7,17 @@ from keras import models
 def mkdir_if_not_exist(dir_):
     if not os.path.isdir(dir_):
         os.makedirs(dir_)
+
+
+def dump_to_json_file(data, filename):
+    with open(filename, 'w') as f:
+        json.dump(data, f)
+
+
+def load_from_json_file(filename):
+    with open(filename, 'r') as f:
+        data = json.load(f)
+    return data
 
 
 def save_model(model, model_file):
