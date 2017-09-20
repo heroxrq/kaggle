@@ -6,9 +6,11 @@ from util import mkdir_if_not_exist
 # path config
 # --------------------------------------------------
 DATASET_DIR = "/home/xierenqiang/dataset/kaggle/cdiscount_image_classification_challenge/dataset"
+DEBUG = False
 
 if not os.path.isdir(DATASET_DIR):
     DATASET_DIR = "/media/xrq/Elements/dataset/kaggle/cdiscount_image_classification_challenge/dataset"
+    DEBUG = True
 
 TRAIN_BSON_FILE = DATASET_DIR + "/train.bson"
 TEST_BSON_FILE = DATASET_DIR + "/test.bson"
@@ -48,6 +50,12 @@ NUM_TEST_PICS = 3095080
 NUM_TRAIN_IMGS = 11134709
 NUM_VALID_IMGS = 1236584
 
+if DEBUG:
+    NUM_TEST_PRODUCTS = 1000
+    NUM_TEST_PICS = 1714
+    NUM_TRAIN_IMGS = 14741
+    NUM_VALID_IMGS = 1648
+
 # --------------------------------------------------
 # image config
 # --------------------------------------------------
@@ -67,6 +75,11 @@ NUM_CLASSES = 5270
 TRAIN_BATCH_SIZE = 1024
 VALID_BATCH_SIZE = 1024
 PREDICT_BATCH_SIZE = 1024
+
+if DEBUG:
+    TRAIN_BATCH_SIZE = 256
+    VALID_BATCH_SIZE = 256
+    PREDICT_BATCH_SIZE = 256
 
 EPOCHS1 = 3
 EPOCHS2 = 3
