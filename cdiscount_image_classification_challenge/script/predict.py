@@ -1,3 +1,4 @@
+import datetime
 import io
 import time
 
@@ -11,8 +12,8 @@ from util import load_model, load_img_array, get_class_indices
 def test_generator(bson_file, batch_size):
     product_cnt = 0
     pic_cnt = 0
-    num_products = TEST_NUM_PRODUCTS
-    num_pics = TEST_NUM_PICS
+    num_products = NUM_TEST_PRODUCTS
+    num_pics = NUM_TEST_PICS
     prods = []
     pics = []
 
@@ -51,7 +52,7 @@ def predict_and_make_submission():
 
         product_cnt = 0
         pic_cnt = 0
-        num_products = TEST_NUM_PRODUCTS
+        num_products = NUM_TEST_PRODUCTS
 
         for prods, pics in test_generator(TEST_BSON_FILE, PREDICT_BATCH_SIZE):
             probs = model.predict_on_batch(pics)

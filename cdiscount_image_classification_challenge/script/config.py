@@ -1,13 +1,14 @@
-import datetime
 import os
 
 from util import mkdir_if_not_exist
 
-DATE = datetime.datetime.now().strftime('%Y-%m-%d')
 # --------------------------------------------------
 # path config
 # --------------------------------------------------
 DATASET_DIR = "/home/xierenqiang/dataset/kaggle/cdiscount_image_classification_challenge/dataset"
+
+if not os.path.isdir(DATASET_DIR):
+    DATASET_DIR = "/media/xrq/Elements/dataset/kaggle/cdiscount_image_classification_challenge/dataset"
 
 TRAIN_BSON_FILE = DATASET_DIR + "/train.bson"
 TEST_BSON_FILE = DATASET_DIR + "/test.bson"
@@ -26,19 +27,26 @@ BASE_DIR = os.path.abspath("..")
 SUBMISSION_DIR = BASE_DIR + "/submission"
 
 MODEL_DIR = BASE_DIR + "/model"
-CUR_MODEL_DIR = MODEL_DIR + "/" + DATE
-BEST_MODEL_FILE = CUR_MODEL_DIR + '/best_model.hdf5'
-BEST_WEIGHTS_FILE = CUR_MODEL_DIR + '/best_weights.hdf5'
-MODEL_FILE = CUR_MODEL_DIR + "/model.json"
-CLASS_INDICES_FILE = CUR_MODEL_DIR + "/class_indices.json"
+BEST_MODEL_FILE = MODEL_DIR + '/best_model.hdf5'
+BEST_WEIGHTS_FILE = MODEL_DIR + '/best_weights.hdf5'
+MODEL_FILE = MODEL_DIR + "/model.json"
+CLASS_INDICES_FILE = MODEL_DIR + "/class_indices.json"
 
 LOG_DIR = BASE_DIR + "/log"
-CUR_LOG_DIR = LOG_DIR + "/" + DATE
-TF_LOG_DIR = CUR_LOG_DIR + "/tf_log"
-PY_LOG_DIR = CUR_LOG_DIR + "/py_log"
+TF_LOG_DIR = LOG_DIR + "/tf_log"
+PY_LOG_DIR = LOG_DIR + "/py_log"
 
-mkdir_if_not_exist(CUR_MODEL_DIR)
+mkdir_if_not_exist(SUBMISSION_DIR)
+mkdir_if_not_exist(MODEL_DIR)
 mkdir_if_not_exist(TF_LOG_DIR)
+
+# --------------------------------------------------
+# dataset config
+# --------------------------------------------------
+NUM_TEST_PRODUCTS = 1768182
+NUM_TEST_PICS = 3095080
+NUM_TRAIN_IMGS = 11134709
+NUM_VALID_IMGS = 1236584
 
 # --------------------------------------------------
 # image config
@@ -55,8 +63,6 @@ INPUT_HEIGHT = IMAGE_HEIGHT
 SEED = 11
 FC_SIZE = 8192
 NUM_CLASSES = 5270
-NUM_TRAIN_IMGS = 11134709
-NUM_VALID_IMGS = 1236584
 
 TRAIN_BATCH_SIZE = 1024
 VALID_BATCH_SIZE = 1024
