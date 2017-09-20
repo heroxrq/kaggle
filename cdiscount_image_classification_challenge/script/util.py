@@ -2,11 +2,32 @@ import json
 import os
 
 from keras import models
+from keras.preprocessing import image
 
 
 def mkdir_if_not_exist(dir_):
     if not os.path.isdir(dir_):
         os.makedirs(dir_)
+
+
+def load_img_array(image_path, grayscale=False, target_size=None, rescale=None):
+    img = image.load_img(image_path, grayscale, target_size)
+    if rescale:
+        img_array = rescale * image.img_to_array(img)
+    else:
+        img_array = image.img_to_array(img)
+    return img_array
+
+
+# https://github.com/fchollet/keras/blob/master/keras/preprocessing/image.py
+def get_class_indices(directory):
+    classes = []
+    for subdir in sorted(os.listdir(directory)):
+        if os.path.isdir(os.path.join(directory, subdir)):
+            classes.append(subdir)
+    class_2_index = dict(zip(classes, range(len(classes))))
+    index_2_class = dict(zip(range(len(classes)), classes))
+    return class_2_index, index_2_class
 
 
 def dump_to_json_file(data, filename):
