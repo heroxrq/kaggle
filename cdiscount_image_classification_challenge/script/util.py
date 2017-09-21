@@ -3,6 +3,7 @@ import os
 
 from keras import models
 from keras.preprocessing import image
+from tensorflow.python.client import device_lib
 
 
 def mkdir_if_not_exist(dir_):
@@ -28,6 +29,11 @@ def get_class_indices(directory):
     class_2_index = dict(zip(classes, range(len(classes))))
     index_2_class = dict(zip(range(len(classes)), classes))
     return class_2_index, index_2_class
+
+
+def get_gpus():
+    gpus = [device.name.encode('utf8') for device in device_lib.list_local_devices() if device.name[:4] == '/gpu']
+    return gpus
 
 
 def dump_to_json_file(data, filename):

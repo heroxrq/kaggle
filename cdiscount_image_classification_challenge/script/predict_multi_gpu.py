@@ -6,6 +6,7 @@ from multiprocessing import Process, Queue
 
 import bson
 import numpy as np
+import tensorflow as tf
 
 from config import *
 from util import load_model, load_img_array, get_class_indices
@@ -42,20 +43,24 @@ def test_data_loader(bson_file, batch_size, img_queue):
                 print("converted {} products {} images".format(product_cnt, pic_cnt))
 
 
-def predictor(img_queue, prob_queue):
-    model = load_model(MODEL_FILE, BEST_WEIGHTS_FILE)
+def predictor(img_queue, prob_queue, gpu='/gpu:0'):
     pic_cnt = 0
-    while True:
-        try:
-            prods, pics = img_queue.get(timeout=60)
-        except Empty:
-            print("the img_queue is empty")
-            break
+    batch_cnt = 0
+    with tf.device(gpu):
+        model = load_model(MODEL_FILE, BEST_WEIGHTS_FILE)
+        while True:
+            try:
+                prods, pics = img_queue.get(timeout=60)
+            except Empty:
+                print("the img_queue is empty")
+                print "{} processed {} batches {} pics".format(gpu, batch_cnt, pic_cnt)
+                break
 
-        probs = model.predict_on_batch(pics)
-        prob_queue.put((prods, probs))
+            probs = model.predict_on_batch(pics)
+            prob_queue.put((prods, probs))
 
-        pic_cnt += len(prods)
+            pic_cnt += len(pics)
+            batch_cnt += 1
 
 
 def submission_creater(prob_queue):
@@ -101,20 +106,24 @@ def submission_creater(prob_queue):
 def predict_and_make_submission():
     start_time = datetime.datetime.now()
 
+    processes = []
+
     img_queue = Queue(10)
     test_data_loader_process = Process(target=test_data_loader, args=(TEST_BSON_FILE, TRAIN_BATCH_SIZE, img_queue))
-    test_data_loader_process.start()
+    processes.append(test_data_loader_process)
 
     prob_queue = Queue(10)
-    predictor_process = Process(target=predictor, args=(img_queue, prob_queue))
-    predictor_process.start()
+    for gpu in ['/gpu:0', '/gpu:1']:
+        predictor_process = Process(target=predictor, args=(img_queue, prob_queue, gpu))
+        processes.append(predictor_process)
 
     submission_creater_process = Process(target=submission_creater, args=(prob_queue,))
-    submission_creater_process.start()
+    processes.append(submission_creater_process)
 
-    test_data_loader_process.join()
-    predictor_process.join()
-    submission_creater_process.join()
+    for process in processes:
+        process.start()
+    for process in processes:
+        process.join()
 
     end_time = datetime.datetime.now()
     cost_time = end_time - start_time
