@@ -1,11 +1,11 @@
 import datetime
+import os
 import sys
 import time
 from Queue import Empty
 from multiprocessing import Process, Queue
 
 import numpy as np
-import tensorflow as tf
 from keras import models
 
 from config import *
@@ -25,6 +25,9 @@ def load_model(model_file, weights_file):
 
 def predictor(gpu, model_dir, pred_queue):
     print "{} load model {}".format(gpu, model_dir)
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu[5:]
+    import tensorflow as tf
 
     with tf.device(gpu):
         pic_cnt = 0
@@ -54,9 +57,9 @@ def ensemble_models(pred_queues, weights):
             try:
                 preds = []
                 for pred_queue in pred_queues:
-                    preds.append(pred_queue.get(timeout=60))
+                    preds.append(pred_queue.get(timeout=120))
             except Empty:
-                print("the pred_queue is empty")
+                print("the pred_queue is empty, has processed {} images".format(i))
                 break
 
             # weight the prediction according to the lb score of the model
@@ -77,7 +80,7 @@ def ensemble_models(pred_queues, weights):
 
                 if idx % 1000 == 0:
                     print "processed %d images" % idx
-            i += PREDICT_BATCH_SIZE
+            i += len(res_array)
     shell_cmd = "zip %s.zip %s" % (submission_file, submission_file)
     os.system(shell_cmd)
 
