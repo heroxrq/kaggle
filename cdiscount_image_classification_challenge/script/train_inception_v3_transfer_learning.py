@@ -13,7 +13,7 @@ from util import save_model
 # --------------------------------------------------
 # gpu config
 # --------------------------------------------------
-config = tf.ConfigProto()
+config = tf.ConfigProto(log_device_placement=True)
 config.gpu_options.allow_growth = True
 sess = tf.Session(config=config)
 K.set_session(sess)

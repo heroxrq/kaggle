@@ -1,15 +1,15 @@
 import datetime
 import io
+import os
 import time
 from Queue import Empty
 from multiprocessing import Process, Queue
 
 import bson
 import numpy as np
-import tensorflow as tf
 
 from config import *
-from util import load_model, load_img_array, get_class_indices
+from util import load_img_array, get_class_indices
 
 
 def test_data_loader(bson_file, batch_size, img_queue):
@@ -46,14 +46,20 @@ def test_data_loader(bson_file, batch_size, img_queue):
 def predictor(img_queue, prob_queue, gpu='/gpu:0'):
     pic_cnt = 0
     batch_cnt = 0
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = gpu[5:]
+    import tensorflow as tf
+    from util import load_model
+
+    print("start {}".format(gpu))
+
     with tf.device(gpu):
         model = load_model(MODEL_FILE, BEST_WEIGHTS_FILE)
         while True:
             try:
-                prods, pics = img_queue.get(timeout=60)
+                prods, pics = img_queue.get(timeout=30)
             except Empty:
-                print("the img_queue is empty")
-                print "{} processed {} batches {} pics".format(gpu, batch_cnt, pic_cnt)
+                print("the img_queue is empty, {} processed {} batches {} pics".format(gpu, batch_cnt, pic_cnt))
                 break
 
             probs = model.predict_on_batch(pics)
@@ -61,6 +67,7 @@ def predictor(img_queue, prob_queue, gpu='/gpu:0'):
 
             pic_cnt += len(pics)
             batch_cnt += 1
+            print("{} processed {} batches {} pics".format(gpu, batch_cnt, pic_cnt))
 
 
 def submission_creater(prob_queue):
@@ -75,10 +82,13 @@ def submission_creater(prob_queue):
 
         while True:
             try:
-                prods, probs = prob_queue.get(timeout=60)
+                prods, probs = prob_queue.get(timeout=120)
             except Empty:
-                print("the prob_queue is empty")
-                break
+                print("the prob_queue is empty, created {} product submissions of {} images".format(product_cnt, pic_cnt))
+                if product_cnt != num_products:
+                    continue
+                else:
+                    break
 
             start_idx = 0
 
@@ -113,7 +123,7 @@ def predict_and_make_submission():
     processes.append(test_data_loader_process)
 
     prob_queue = Queue(10)
-    for gpu in ['/gpu:0', '/gpu:1']:
+    for gpu in ['/gpu:0', '/gpu:1', '/gpu:2', '/gpu:3']:
         predictor_process = Process(target=predictor, args=(img_queue, prob_queue, gpu))
         processes.append(predictor_process)
 
