@@ -24,7 +24,7 @@ def load_model(model_file, weights_file):
 
 
 def predictor(gpu, model_dir, pred_queue):
-    print "{} load model {}".format(gpu, model_dir)
+    print("{} load model {}".format(gpu, model_dir))
 
     os.environ["CUDA_VISIBLE_DEVICES"] = gpu[5:]
     import tensorflow as tf
@@ -41,7 +41,7 @@ def predictor(gpu, model_dir, pred_queue):
             pred = model.predict_on_batch(batch)
             pred_queue.put(pred)
             pic_cnt += len(pred)
-            print "{} predicted {} images".format(gpu, pic_cnt)
+            print("{} predicted {} images".format(gpu, pic_cnt))
 
 
 def ensemble_models(pred_queues, weights):
@@ -52,14 +52,14 @@ def ensemble_models(pred_queues, weights):
     with open(submission_file, 'w') as outfile:
         outfile.write('img,rle_mask\n')
 
-        i = 0
+        cnt = 0
         while True:
             try:
                 preds = []
                 for pred_queue in pred_queues:
                     preds.append(pred_queue.get(timeout=120))
             except Empty:
-                print("the pred_queue is empty, has processed {} images".format(i))
+                print("the pred_queue is empty, has processed {} images".format(cnt))
                 break
 
             # weight the prediction according to the lb score of the model
@@ -74,13 +74,13 @@ def ensemble_models(pred_queues, weights):
                 rle_str = run_length_encoding(img)
 
                 # make submission
-                idx = i + k
+                idx = cnt + k
                 out_line = all_test_images[idx] + ',' + rle_str + '\n'
                 outfile.write(out_line)
 
                 if idx % 1000 == 0:
-                    print "processed %d images" % idx
-            i += len(res_array)
+                    print("processed {} images".format(idx))
+            cnt += len(res_array)
     shell_cmd = "zip %s.zip %s" % (submission_file, submission_file)
     os.system(shell_cmd)
 
