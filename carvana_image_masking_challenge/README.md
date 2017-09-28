@@ -1,1 +1,1 @@
-The best single model achieves leaderboard score of 0.9966.
+The best single model achieves private score of 0.9963.
