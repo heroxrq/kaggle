@@ -18,10 +18,11 @@ def _get_lr_scheduler(args, kv):
         if begin_epoch >= s:
             lr *= args.lr_factor
     if lr != args.lr:
-        logging.info('Adjust learning rate to %e for epoch %d' %(lr, begin_epoch))
+        logging.info('Adjust learning rate to %e for epoch %d' % (lr, begin_epoch))
 
     steps = [epoch_size * (x-begin_epoch) for x in step_epochs if x-begin_epoch > 0]
     return (lr, mx.lr_scheduler.MultiFactorScheduler(step=steps, factor=args.lr_factor))
+
 
 def _load_model(args, rank=0):
     if 'load_epoch' not in args or args.load_epoch is None:
@@ -35,6 +36,7 @@ def _load_model(args, rank=0):
     logging.info('Loaded model %s_%04d.params', model_prefix, args.load_epoch)
     return (sym, arg_params, aux_params)
 
+
 def _save_model(args, rank=0):
     if args.model_prefix is None:
         return None
@@ -43,6 +45,7 @@ def _save_model(args, rank=0):
         os.mkdir(dst_dir)
     return mx.callback.do_checkpoint(args.model_prefix if rank == 0 else "%s-%d" % (
         args.model_prefix, rank))
+
 
 def add_fit_args(parser):
     """
@@ -90,11 +93,12 @@ def add_fit_args(parser):
                        help='precision: float32 or float16')
     return train
 
+
 def fit(args, network, data_loader, **kwargs):
     """
     train a model
     args : argparse returns
-    network : the symbol definition of the nerual network
+    network : the symbol definition of the neural network
     data_loader : function that returns the train and val data iterators
     """
     # kvstore
@@ -118,7 +122,6 @@ def fit(args, network, data_loader, **kwargs):
                 tic = time.time()
 
         return
-
 
     # load model
     if 'arg_params' in kwargs and 'aux_params' in kwargs:
@@ -145,10 +148,9 @@ def fit(args, network, data_loader, **kwargs):
         symbol        = network
     )
 
-    lr_scheduler  = lr_scheduler
     optimizer_params = {
         'learning_rate': lr,
-        'wd' : args.wd,
+        'wd': args.wd,
         'lr_scheduler': lr_scheduler}
 
     # Add 'multi_precision' parameter only for SGD optimizer
@@ -161,19 +163,10 @@ def fit(args, network, data_loader, **kwargs):
         optimizer_params['momentum'] = args.mom
 
     monitor = mx.mon.Monitor(args.monitor, pattern=".*") if args.monitor > 0 else None
-
-    if args.network == 'alexnet':
-        # AlexNet will not converge using Xavier
-        initializer = mx.init.Normal()
-    else:
-        initializer = mx.init.Xavier(
-            rnd_type='gaussian', factor_type="in", magnitude=2)
-    # initializer   = mx.init.Xavier(factor_type="in", magnitude=2.34),
+    initializer = mx.init.Xavier(rnd_type='gaussian', factor_type="in", magnitude=2)
 
     # evaluation metrices
     eval_metrics = ['accuracy']
-    if args.top_k > 0:
-        eval_metrics.append(mx.metric.create('top_k_accuracy', top_k=args.top_k))
 
     # callbacks that run after each batch
     batch_end_callbacks = [mx.callback.Speedometer(args.batch_size, args.disp_batches)]
