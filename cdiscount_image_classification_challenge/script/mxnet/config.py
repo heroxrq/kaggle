@@ -1,5 +1,6 @@
 import os
 
+
 def mkdir_if_not_exist(dir_):
     if not os.path.isdir(dir_):
         os.makedirs(dir_)
@@ -21,8 +22,10 @@ SAMPLE_SUBMISSION_CSV_FILE = DATASET_DIR + "/sample_submission.csv"
 
 TRAIN_BSON_TRANSFORM_DIR = DATASET_DIR + "/train_bson_transform"
 TRAIN_DIR = TRAIN_BSON_TRANSFORM_DIR + "/train"
+TRAIN_ALL_DIR = TRAIN_BSON_TRANSFORM_DIR + "/train_all"
 VALID_DIR = TRAIN_BSON_TRANSFORM_DIR + "/valid"
 TRAIN_RAW_DIR = TRAIN_DIR + "/raw"
+TRAIN_ALL_RAW_DIR = TRAIN_ALL_DIR + "/raw"
 VALID_RAW_DIR = VALID_DIR + "/raw"
 
 BASE_DIR = os.path.abspath("../..")
@@ -48,8 +51,8 @@ mkdir_if_not_exist(TF_LOG_DIR)
 # --------------------------------------------------
 NUM_TEST_PRODUCTS = 1768182
 NUM_TEST_PICS = 3095080
-NUM_TRAIN_IMGS = 11134709
-NUM_VALID_IMGS = 1236584
+NUM_TRAIN_IMGS = 11134163  # 11134709
+NUM_VALID_IMGS = 1237130  # 1236584
 
 if DEBUG:
     NUM_TEST_PRODUCTS = 1000
@@ -63,29 +66,24 @@ if DEBUG:
 IMAGE_WIDTH = 180
 IMAGE_HEIGHT = 180
 
-INPUT_WIDTH = IMAGE_WIDTH
-INPUT_HEIGHT = IMAGE_HEIGHT
+INPUT_WIDTH = 96
+INPUT_HEIGHT = 96
 
 # --------------------------------------------------
 # model config
 # --------------------------------------------------
 SEED = 11
-FC_SIZE = 8192
 NUM_CLASSES = 5270
 
-TRAIN_BATCH_SIZE = 1024
-VALID_BATCH_SIZE = 1024
-PREDICT_BATCH_SIZE = 1024
+TRAIN_BATCH_SIZE = 1000
+VALID_BATCH_SIZE = 1000
+PREDICT_BATCH_SIZE = 1000
 
 if DEBUG:
-    TRAIN_BATCH_SIZE = 24
-    VALID_BATCH_SIZE = 24
-    PREDICT_BATCH_SIZE = 24
+    TRAIN_BATCH_SIZE = 64
+    VALID_BATCH_SIZE = 64
+    PREDICT_BATCH_SIZE = 64
 
-EPOCHS = 5
-EPOCHS1 = 3
-EPOCHS2 = 3
+EPOCHS = 50
 
 LR = 0.01
-LR1 = 0.001
-LR2 = 0.0001

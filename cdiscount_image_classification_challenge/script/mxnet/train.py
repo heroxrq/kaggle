@@ -1,11 +1,11 @@
 import argparse
 import logging
-logging.basicConfig(level=logging.DEBUG)
-import fit, data
+import os
+import data
+import fit
 from config import *
 
-import os
-
+logging.basicConfig(level=logging.DEBUG)
 os.environ['MXNET_CPU_WORKER_NTHREADS'] = '8'
 
 
@@ -16,28 +16,26 @@ if __name__ == '__main__':
     fit.add_fit_args(parser)
     parser.set_defaults(
         # network
-        network        = 'resnext',
-        num_layers     = 50,
-        kv_store       = 'device',
-        test_io        = 0,
+        network             = 'resnext',
+        num_layers          = 50,
         # data
-        data_train_dir = TRAIN_RAW_DIR,
-        data_train_list= TRAIN_DIR + "/train_raw.lst",
-        data_val_dir   = VALID_RAW_DIR,
-        data_val_list  = VALID_DIR + "/valid_raw.lst",
-        num_classes    = NUM_CLASSES,
-        num_examples   = NUM_TRAIN_IMGS,
-        image_shape    = '3,96,96',
+        data_train_imgrec   = TRAIN_ALL_DIR + "/train_all_train.rec",
+        data_train_list     = TRAIN_ALL_DIR + "/train_all_train.lst",
+        data_val_imgrec     = TRAIN_ALL_DIR + "/train_all_val.rec",
+        data_val_list       = TRAIN_ALL_DIR + "/train_all_val.lst",
+        num_classes         = NUM_CLASSES,
+        num_examples        = NUM_TRAIN_IMGS,
+        image_shape         = '3,%d,%d' % (INPUT_HEIGHT, INPUT_WIDTH),
         # train
-        gpus           = '0',
-        batch_size     = 800,
-        num_epochs     = 50,
-        lr             = 0.01,
-        lr_factor      = 0.2,
-        lr_step_epochs = '10,20,30',
-        optimizer      = 'sgd',
-        disp_batches   = 10,
-        model_prefix   = MODEL_DIR + "/resnext50",
+        gpus                = '0,1,2,3',
+        batch_size          = TRAIN_BATCH_SIZE,
+        num_epochs          = EPOCHS,
+        lr                  = LR,
+        lr_factor           = 0.5,
+        lr_step_epochs      = '5,10,15,20,25,30,35,40,45',
+        optimizer           = 'sgd',
+        disp_batches        = 10,
+        model_prefix        = MODEL_DIR + "/resnext50",
     )
     args = parser.parse_args()
 

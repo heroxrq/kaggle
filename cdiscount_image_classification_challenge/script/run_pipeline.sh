@@ -3,7 +3,7 @@
 CUR_DIR=$(cd `dirname $0`; pwd)
 
 DATASET_DIR="$HOME/dataset/kaggle/cdiscount_image_classification_challenge/dataset"
-if [ -d $DATASET_DIR ]; then
+if [ ! -d $DATASET_DIR ]; then
     DATASET_DIR="/media/xrq/Elements/dataset/kaggle/cdiscount_image_classification_challenge/dataset"
 fi
 PYTHON2="$HOME/install/anaconda2/bin/python"
@@ -25,4 +25,4 @@ PY_LOG="$PY_LOG_DIR/log.$DATE"
 
 #$PYTHON2 train_inception_v3_transfer_learning.py >>$PY_LOG 2>&1
 #$PYTHON2 predict.py >>$PY_LOG 2>&1
-$PYTHON2 predict_multi_gpu.py >>$PY_LOG 2>&1 &
+#$PYTHON2 predict_multi_gpu.py >>$PY_LOG 2>&1
