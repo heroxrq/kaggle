@@ -1,6 +1,6 @@
 import argparse
 import logging
-import os
+
 import data
 import fit
 from config import *
@@ -19,10 +19,12 @@ if __name__ == '__main__':
         network             = 'resnext',
         num_layers          = 50,
         # data
+        data_train_imglist  = TRAIN_ALL_DIR + "/train_all_train.lst",
         data_train_imgrec   = TRAIN_ALL_DIR + "/train_all_train.rec",
-        data_train_list     = TRAIN_ALL_DIR + "/train_all_train.lst",
+        data_train_imgidx   = TRAIN_ALL_DIR + "/train_all_train.idx",
+        data_val_imglist    = TRAIN_ALL_DIR + "/train_all_val.lst",
         data_val_imgrec     = TRAIN_ALL_DIR + "/train_all_val.rec",
-        data_val_list       = TRAIN_ALL_DIR + "/train_all_val.lst",
+        data_val_imgidx     = TRAIN_ALL_DIR + "/train_all_val.idx",
         num_classes         = NUM_CLASSES,
         num_examples        = NUM_TRAIN_IMGS,
         image_shape         = '3,%d,%d' % (INPUT_HEIGHT, INPUT_WIDTH),

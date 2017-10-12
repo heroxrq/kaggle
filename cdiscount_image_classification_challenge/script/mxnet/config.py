@@ -57,8 +57,8 @@ NUM_VALID_IMGS = 1237130  # 1236584
 if DEBUG:
     NUM_TEST_PRODUCTS = 1000
     NUM_TEST_PICS = 1714
-    NUM_TRAIN_IMGS = 14741
-    NUM_VALID_IMGS = 1648
+    NUM_TRAIN_IMGS = 13266  # 14741
+    NUM_VALID_IMGS = 1475  # 1648
 
 # --------------------------------------------------
 # image config
