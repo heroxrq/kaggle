@@ -17,8 +17,6 @@ def get_image_iter(args, kv=None):
         path_imgrec         = args.data_train_imgrec,
         path_imgidx         = args.data_train_imgidx,
         shuffle             = True,
-        data_name           = 'train_data',
-        label_name          = 'train_softmax_label',
         num_parts           = nworker,
         part_index          = rank,
         # rand_crop           = True,
@@ -39,8 +37,6 @@ def get_image_iter(args, kv=None):
         path_imglist        = args.data_val_imglist,
         path_imgrec         = args.data_val_imgrec,
         path_imgidx         = args.data_val_imgidx,
-        data_name           = 'val_data',
-        label_name          = 'val_softmax_label',
         num_parts           = nworker,
         part_index          = rank)
 

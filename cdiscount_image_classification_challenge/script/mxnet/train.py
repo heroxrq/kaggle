@@ -29,7 +29,7 @@ if __name__ == '__main__':
         num_examples        = NUM_TRAIN_IMGS,
         image_shape         = '3,%d,%d' % (INPUT_HEIGHT, INPUT_WIDTH),
         # train
-        gpus                = '0,1,2,3',
+        gpus                = '0',
         batch_size          = TRAIN_BATCH_SIZE,
         num_epochs          = EPOCHS,
         lr                  = LR,
