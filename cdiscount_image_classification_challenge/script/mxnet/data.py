@@ -19,15 +19,16 @@ def get_image_iter(args, kv=None):
         shuffle             = True,
         num_parts           = nworker,
         part_index          = rank,
-        # rand_crop           = True,
-        # rand_mirror         = True,
-        # mean                = True,
-        # brightness          = 0.1,
-        # contrast            = 0.1,
-        # saturation          = 0.1,
-        # hue                 = 0.1,
-        # rand_gray           = 0.05,
-        # pca_noise           = 0.05
+        # augment
+        rand_crop           = True,
+        rand_mirror         = True,
+        mean                = True,
+        brightness          = 0.1,
+        contrast            = 0.1,
+        saturation          = 0.1,
+        hue                 = 0.1,
+        rand_gray           = 0.05,
+        pca_noise           = 0.05
     )
 
     val = mx.image.ImageIter(
