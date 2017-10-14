@@ -24,7 +24,7 @@ VALID_DIR = TRAIN_BSON_TRANSFORM_DIR + "/valid"
 TRAIN_RAW_DIR = TRAIN_DIR + "/raw"
 VALID_RAW_DIR = VALID_DIR + "/raw"
 
-BASE_DIR = os.path.abspath("..")
+BASE_DIR = os.path.abspath("../..")
 
 SUBMISSION_DIR = BASE_DIR + "/submission"
 
