@@ -7,6 +7,7 @@ import mxnet as mx
 from config import *
 
 logging.basicConfig(level=logging.DEBUG)
+os.environ['MXNET_CPU_WORKER_NTHREADS'] = '8'
 
 
 def get_fine_tune_model(symbol, arg_params, num_classes, layer_name):
@@ -50,10 +51,10 @@ if __name__ == "__main__":
         data_val_imgidx     = TRAIN_ALL_DIR + "/train_all_val.idx",
         num_classes         = NUM_CLASSES,
         num_examples        = NUM_TRAIN_IMGS,
-        image_shape         = '3,96,96',
+        image_shape         = '3,128,128',
         # train
-        gpus                = '0',
-        batch_size          = 16,
+        gpus                = '0,1,2,3',
+        batch_size          = 400,
         num_epochs          = 10,
         lr                  = 0.01,
         lr_factor           = 0.1,
