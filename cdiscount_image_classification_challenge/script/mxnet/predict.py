@@ -141,10 +141,10 @@ def predictor(prob_queue=None):
     test_iter = TestDataIter(bson_flatten_file, data_shape)
 
     num_batch = int(math.ceil(NUM_TEST_PICS / batch_size))
-    for i in range(num_batch):
-        probs = mod.predict(eval_data=test_iter, num_batch=1, reset=False, always_output_list=True)
+    for pred, i_batch, batch in mod.iter_predict(eval_data=test_iter, reset=False):
         if prob_queue is not None:
-            prob_queue.put(probs.asnumpy())
+            prob_queue.put(pred[0].asnumpy())
+            logger.info("predicted {} batches".format(i_batch + 1))
 
 
 def submission_creater(prob_queue):
