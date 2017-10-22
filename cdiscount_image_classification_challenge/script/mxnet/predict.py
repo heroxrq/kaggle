@@ -167,7 +167,7 @@ def submission_creater(prob_queue):
         start_idx = 0
 
         for i in range(1, len(prods) + 1, 1):
-            if prods[i] != prods[start_idx] or i == len(prods):
+            if i == len(prods) or prods[i] != prods[start_idx]:
                 end_idx = i
                 num_pics = end_idx - start_idx
                 _id = prods[start_idx]
