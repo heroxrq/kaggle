@@ -76,14 +76,14 @@ def get_image_iter(args, kv=None):
         num_parts           = nworker,
         part_index          = rank,
         # augment
-        rand_crop           = True,
-        rand_mirror         = True,
-        hue                 = 0.1,
-        saturation          = 0.1,
-        brightness          = 0.1,
-        contrast            = 0.1,
-        rand_gray           = 0.05,
-        pca_noise           = 0.05
+        # rand_crop           = True,
+        # rand_mirror         = True,
+        # hue                 = 0.1,
+        # saturation          = 0.1,
+        # brightness          = 0.1,
+        # contrast            = 0.1,
+        # rand_gray           = 0.05,
+        # pca_noise           = 0.05
     )
 
     val = mx.io.ImageRecordIter(

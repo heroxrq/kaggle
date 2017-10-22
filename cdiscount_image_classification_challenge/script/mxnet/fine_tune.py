@@ -51,13 +51,13 @@ if __name__ == "__main__":
         data_val_imgidx     = TRAIN_ALL_DIR + "/train_all_val.idx",
         num_classes         = NUM_CLASSES,
         num_examples        = NUM_TRAIN_IMGS,
-        image_shape         = '3,128,128',
+        image_shape         = '3,160,160',
         # train
         gpus                = '0,1,2,3',
-        batch_size          = 400,
+        batch_size          = 240,
         num_epochs          = 10,
         lr                  = 0.01,
-        lr_factor           = 0.1,
+        lr_factor           = 0.2,
         lr_step_epochs      = '5',
         wd                  = 0,
         mom                 = 0,
@@ -72,7 +72,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # pre-trained model should be downloaded and renamed
-    sym, arg_params, aux_params = mx.model.load_checkpoint(MODEL_DIR + "/resnext101", 1)
+    sym, arg_params, aux_params = mx.model.load_checkpoint(MODEL_DIR + "/resnext101", 0)
 
     # remove the last fullc layer
     (new_sym, new_args) = get_fine_tune_model(sym, arg_params, args.num_classes, args.layer_before_fullc)
