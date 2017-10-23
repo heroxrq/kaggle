@@ -38,13 +38,8 @@ BEST_WEIGHTS_FILE = MODEL_DIR + '/best_weights.hdf5'
 MODEL_FILE = MODEL_DIR + "/model.json"
 CLASS_INDICES_FILE = MODEL_DIR + "/class_indices.json"
 
-LOG_DIR = BASE_DIR + "/log"
-TF_LOG_DIR = LOG_DIR + "/tf_log"
-PY_LOG_DIR = LOG_DIR + "/py_log"
-
 mkdir_if_not_exist(SUBMISSION_DIR)
 mkdir_if_not_exist(MODEL_DIR)
-mkdir_if_not_exist(TF_LOG_DIR)
 
 # --------------------------------------------------
 # dataset config

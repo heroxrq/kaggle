@@ -11,10 +11,9 @@ PYTHON3="$HOME/install/anaconda3/bin/python"
 
 DATE=$(date +%F)
 
-PY_LOG_DIR="../../log/$DATE/py_log"
+PY_LOG_DIR="../../log"
 mkdir -p $PY_LOG_DIR
 
 PY_LOG="$PY_LOG_DIR/log.$DATE"
 
-
-$PYTHON3 train.py >>$PY_LOG 2>&1 &
+$PYTHON3 fine_tune.py >>$PY_LOG 2>&1 &

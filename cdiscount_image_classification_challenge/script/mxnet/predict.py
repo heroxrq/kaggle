@@ -80,14 +80,17 @@ class TestDataIter(DataIter):
         self.pic_cnt = 0
 
     def next(self):
+        crop_size = (self.data_shape[3], self.data_shape[2])
         batch_data = mx.ndarray.empty(self.data_shape)
         i = 0
         if self.pic_cnt < NUM_TEST_PICS:
             for prod in self.bff_iter:
                 str_image = io.BytesIO(prod['pic']).read()
-                picture = mx.img.resize_short(mx.img.imdecode(str_image), self.data_shape[-1])
+                picture = mx.img.imdecode(str_image)
+                picture = mx.img.CenterCropAug(crop_size, 2)(picture)
                 picture = mx.ndarray.transpose(picture, axes=(2, 0, 1))
                 batch_data[i] = picture
+
                 i += 1
                 self.pic_cnt += 1
 
@@ -123,13 +126,14 @@ class TestDataIter(DataIter):
 
 
 def predictor(prob_queue=None):
-    batch_size = 100
+    gpus = '0,1,2,3'
+    batch_size = 8000
     data_shape = (batch_size, 3, 128, 128)
 
     sym, arg_params, aux_params = mx.model.load_checkpoint(MODEL_DIR + "/resnext101", 1)
     mod = mx.mod.Module(
         symbol        = sym,
-        context       = [mx.gpu(int(i)) for i in ['0']]
+        context       = [mx.gpu(int(i)) for i in gpus.split(',')]
     )
     mod.bind(data_shapes=[('data', data_shape)], for_training=False)
     mod.set_params(arg_params, aux_params)
