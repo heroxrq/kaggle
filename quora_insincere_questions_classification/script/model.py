@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 from keras import backend as K
-from keras.layers import Embedding, LSTM, Bidirectional, Dense
+from keras import initializers, regularizers, constraints
+from keras.layers import Embedding, LSTM, Bidirectional, Dense, Layer
 from keras.models import Input, Model
 from keras.optimizers import Adam
 from keras.preprocessing.sequence import pad_sequences
@@ -52,6 +53,7 @@ def f1(y_true, y_pred):
     return 2*((precision_*recall_)/(precision_+recall_+K.epsilon()))
 
 
+############################################################
 def load_and_preprocess_data(maxlen, seed=11):
     train_df = pd.read_csv("../input/train.csv")
     test_df = pd.read_csv("../input/test.csv")
@@ -85,14 +87,21 @@ def load_and_preprocess_data(maxlen, seed=11):
     return train_X, test_X, train_y, tokenizer.word_index
 
 
-def load_glove(word_index, num_words):
-    EMBEDDING_FILE = '../input/embeddings/glove.840B.300d/glove.840B.300d.txt'
-
+def load_pretrained_embedding(word_index, num_words, embedding_type='glove'):
     def get_coefs(word, *arr):
         return word, np.asarray(arr, dtype='float32')
-    embeddings_glove = dict(get_coefs(*line.split(" ")) for line in open(EMBEDDING_FILE))
 
-    all_embs = np.stack(embeddings_glove.values())
+    if embedding_type == 'glove':
+        EMBEDDING_FILE = '../input/embeddings/glove.840B.300d/glove.840B.300d.txt'
+        embeddings = dict(get_coefs(*line.split(" ")) for line in open(EMBEDDING_FILE))
+    elif embedding_type == 'para':
+        EMBEDDING_FILE = '../input/embeddings/paragram_300_sl999/paragram_300_sl999.txt'
+        embeddings = dict(get_coefs(*line.split(" ")) for line in open(EMBEDDING_FILE, encoding="utf8", errors='ignore'))
+    else:
+        EMBEDDING_FILE = '../input/embeddings/wiki-news-300d-1M/wiki-news-300d-1M.vec'
+        embeddings = dict(get_coefs(*line.split(" ")) for line in open(EMBEDDING_FILE) if len(line) > 100)
+
+    all_embs = np.stack(embeddings.values())
     emb_mean, emb_std = all_embs.mean(), all_embs.std()
     embed_size = all_embs.shape[1]
 
@@ -101,12 +110,100 @@ def load_glove(word_index, num_words):
     for word, i in word_index.items():
         if i >= nb_words:
             continue
-        embedding_vector = embeddings_glove.get(word)
+        embedding_vector = embeddings.get(word)
         if embedding_vector is not None:
             embedding_matrix[i] = embedding_vector
     print("embedding_matrix shape:", embedding_matrix.shape)
 
     return embedding_matrix
+
+
+############################################################
+class Attention(Layer):
+    def __init__(self,
+                 step_dim,
+                 W_regularizer=None,
+                 b_regularizer=None,
+                 W_constraint=None,
+                 b_constraint=None,
+                 bias=True,
+                 **kwargs):
+
+        self.supports_masking = True
+        self.init = initializers.get('glorot_uniform')
+
+        self.W_regularizer = regularizers.get(W_regularizer)
+        self.b_regularizer = regularizers.get(b_regularizer)
+
+        self.W_constraint = constraints.get(W_constraint)
+        self.b_constraint = constraints.get(b_constraint)
+
+        self.bias = bias
+        self.step_dim = step_dim
+        self.feature_dim = 0
+        super(Attention, self).__init__(**kwargs)
+
+    def build(self, input_shape):
+        assert len(input_shape) == 3
+        self.feature_dim = input_shape[-1]
+
+        self.W = self.add_weight('{}_W'.format(self.name),
+                                 shape=(input_shape[-1],),
+                                 initializer=self.init,
+                                 regularizer=self.W_regularizer,
+                                 constraint=self.W_constraint)
+        if self.bias:
+            self.b = self.add_weight('{}_b'.format(self.name),
+                                     shape=(input_shape[1],),
+                                     initializer='zero',
+                                     regularizer=self.b_regularizer,
+                                     constraint=self.b_constraint)
+        super(Attention, self).build(input_shape)
+
+    def compute_mask(self, input, input_mask=None):
+        return None
+
+    def call(self, x, mask=None):
+        feature_dim = self.feature_dim
+        step_dim = self.step_dim
+
+        eij = K.reshape(K.dot(K.reshape(x, (-1, feature_dim)),
+                              K.reshape(self.W, (feature_dim, 1))),
+                        (-1, step_dim))
+
+        if self.bias:
+            eij += self.b
+
+        eij = K.tanh(eij)
+
+        a = K.exp(eij)
+
+        if mask is not None:
+            a *= K.cast(mask, K.floatx())
+
+        a /= K.cast(K.sum(a, axis=1, keepdims=True) + K.epsilon(), K.floatx())
+
+        a = K.expand_dims(a)
+        weighted_input = x * a
+        return K.sum(weighted_input, axis=1)
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0], self.feature_dim
+
+
+def model_lstm_attention(embedding_matrix, maxlen, embed_size, units=64):
+    num_words = len(embedding_matrix)
+    input = Input(shape=(maxlen,))
+    x = Embedding(num_words, embed_size, weights=[embedding_matrix], trainable=False)(input)
+    x = Bidirectional(LSTM(units*2, return_sequences=True))(x)
+    x = Bidirectional(LSTM(units, return_sequences=True))(x)
+    x = Attention(maxlen)(x)
+    x = Dense(units, activation='relu')(x)
+    output = Dense(1, activation='sigmoid')(x)
+    model = Model(inputs=input, outputs=output)
+    model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=[precision, recall, f1])
+    model.summary()
+    return model
 
 
 def model_lstm(embedding_matrix, maxlen, embed_size, units=64):
@@ -123,6 +220,7 @@ def model_lstm(embedding_matrix, maxlen, embed_size, units=64):
     return model
 
 
+############################################################
 def find_best_threshold(y_val, pred_y_val):
     best_threshold = 0.5
     best_f1_score = 0.0
@@ -149,7 +247,7 @@ def train(model, X_train, y_train, X_val, y_val, epochs=1):
     return model
 
 
-def predict(model, test_X, best_threshold, val_best_f1_score):
+def predict(model, test_X, best_threshold):
     pred_test_y = model.predict(test_X, batch_size=512)
     pred_test_y = pred_test_y.reshape(-1)
     pred_test_y = np.where(pred_test_y > best_threshold, 1, 0)
@@ -157,23 +255,22 @@ def predict(model, test_X, best_threshold, val_best_f1_score):
     test_df = pd.read_csv("../input/test.csv")
     out_df = pd.DataFrame({"qid": test_df["qid"].values})
     out_df['prediction'] = pred_test_y
-    out_df.to_csv("submission_{:.6f}.csv".format(val_best_f1_score), index=False)
+    out_df.to_csv("submission.csv", index=False)
 
 
 def train_and_predict():
     train_X, test_X, train_y, word_index = load_and_preprocess_data(maxlen=MAXLEN, seed=SEED)
-    embedding_matrix = load_glove(word_index, num_words=NUM_WORDS)
+    embedding_matrix = load_pretrained_embedding(word_index, num_words=NUM_WORDS)
 
     X_train, X_val, y_train, y_val = train_test_split(train_X, train_y, test_size=0.05, random_state=SEED)
 
-    model = model_lstm(embedding_matrix, maxlen=MAXLEN, embed_size=EMBED_SIZE, units=64)
-    model = train(model, X_train, y_train, X_val, y_val, epochs=2)
+    model = model_lstm_attention(embedding_matrix, maxlen=MAXLEN, embed_size=EMBED_SIZE, units=64)
+    model = train(model, X_train, y_train, X_val, y_val, epochs=3)
 
     pred_y_val = model.predict(X_val, batch_size=512, verbose=0)
     best_threshold, best_f1_score = find_best_threshold(y_val, pred_y_val)
 
-    predict(model, test_X, best_threshold, best_f1_score)
+    predict(model, test_X, best_threshold)
 
 
-if __name__ == '__main__':
-    train_and_predict()
+train_and_predict()

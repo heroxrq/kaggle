@@ -1,6 +1,7 @@
 *iml
 *idea
 *dataset
+*input
 *tmp
 *others_solution
 *.jpg
@@ -8,6 +9,7 @@
 *.txt
 *.pyc
 *log*
+*ipynb_checkpoints
 exp
 model
 submission
