@@ -3,6 +3,7 @@ import pandas as pd
 from keras import backend as K
 from keras import initializers, regularizers, constraints
 from keras.layers import Embedding, LSTM, GRU, Bidirectional, Dense, Layer
+from keras.layers import SpatialDropout1D, GlobalAveragePooling1D, GlobalMaxPooling1D, concatenate, Dropout
 from keras.models import Input, Model
 from keras.optimizers import Adam
 from keras.preprocessing.sequence import pad_sequences
@@ -13,8 +14,8 @@ from sklearn.model_selection import train_test_split
 
 ############################################################
 EMBED_SIZE = 300
-NUM_WORDS = 222161
-MAXLEN = 40
+NUM_WORDS = 150000
+MAXLEN = 50
 SEED = 11
 ############################################################
 
@@ -54,7 +55,7 @@ def f1(y_true, y_pred):
 
 
 ############################################################
-def load_and_preprocess_data(maxlen, seed=11):
+def load_and_preprocess_data(maxlen, num_words, seed=11):
     train_df = pd.read_csv("../input/train.csv")
     test_df = pd.read_csv("../input/test.csv")
     print("Train shape:", train_df.shape)
@@ -65,7 +66,7 @@ def load_and_preprocess_data(maxlen, seed=11):
     test_X = test_df["question_text"].fillna("_##_").values
 
     # Tokenize the sentences
-    tokenizer = Tokenizer()
+    tokenizer = Tokenizer(num_words=num_words)
     tokenizer.fit_on_texts(list(train_X))
     train_X = tokenizer.texts_to_sequences(train_X)
     test_X = tokenizer.texts_to_sequences(test_X)
@@ -87,7 +88,7 @@ def load_and_preprocess_data(maxlen, seed=11):
     return train_X, test_X, train_y, tokenizer.word_index
 
 
-def load_pretrained_embedding(word_index, num_words, embedding_type='glove'):
+def load_pretrained_embedding(word_index, num_words, embedding_type='glove', seed=11):
     def get_coefs(word, *arr):
         return word, np.asarray(arr, dtype='float32')
 
@@ -106,6 +107,7 @@ def load_pretrained_embedding(word_index, num_words, embedding_type='glove'):
     embed_size = all_embs.shape[1]
 
     nb_words = min(num_words, len(word_index))
+    np.random.seed(seed)
     embedding_matrix = np.random.normal(emb_mean, emb_std, (nb_words, embed_size))
     for word, i in word_index.items():
         if i >= nb_words:
@@ -189,6 +191,27 @@ class Attention(Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape[0], self.feature_dim
+
+
+def model_lstm_gru_attention(embedding_matrix, maxlen, embed_size, units=64):
+    num_words = len(embedding_matrix)
+    input = Input(shape=(maxlen,))
+    x = Embedding(num_words, embed_size, weights=[embedding_matrix], trainable=False)(input)
+    x = Bidirectional(LSTM(units, return_sequences=True))(x)
+    y = Bidirectional(GRU(units, return_sequences=True))(x)
+    attention_1 = Attention(maxlen)(x)  # skip connection
+    attention_2 = Attention(maxlen)(y)
+    avg_pool = GlobalAveragePooling1D()(y)
+    max_pool = GlobalMaxPooling1D()(y)
+    concat = concatenate([attention_1, attention_2, avg_pool, max_pool])
+    x = Dropout(0.2)(concat)
+    x = Dense(units, activation='relu')(x)
+    x = Dropout(0.1)(x)
+    output = Dense(1, activation='sigmoid')(x)
+    model = Model(inputs=input, outputs=output)
+    model.compile(loss='binary_crossentropy', optimizer=Adam(), metrics=[precision, recall, f1])
+    model.summary()
+    return model
 
 
 def model_lstm_attention(embedding_matrix, maxlen, embed_size, units=64):
@@ -282,21 +305,24 @@ def predict(models, test_X, best_threshold):
 
 
 def train_and_predict():
-    train_X, test_X, train_y, word_index = load_and_preprocess_data(maxlen=MAXLEN, seed=SEED)
+    train_X, test_X, train_y, word_index = load_and_preprocess_data(maxlen=MAXLEN, num_words=NUM_WORDS, seed=SEED)
 
     embedding_matrix_glove = load_pretrained_embedding(word_index, num_words=NUM_WORDS, embedding_type='glove')
     embedding_matrix_para = load_pretrained_embedding(word_index, num_words=NUM_WORDS, embedding_type='para')
     embedding_matrix = np.mean([embedding_matrix_glove, embedding_matrix_para], axis=0)
 
     X_train, X_val, y_train, y_val = train_test_split(train_X, train_y, test_size=0.05, random_state=SEED)
+    print("X_train shape:", X_train.shape)
+    print("X_val shape:", X_val.shape)
 
     model_1 = model_lstm_attention(embedding_matrix, maxlen=MAXLEN, embed_size=EMBED_SIZE, units=64)
     model_2 = model_gru_attention(embedding_matrix, maxlen=MAXLEN, embed_size=EMBED_SIZE, units=64)
+    model_3 = model_lstm_gru_attention(embedding_matrix, maxlen=MAXLEN, embed_size=EMBED_SIZE, units=64)
 
-    models = [model_1, model_2]
+    models = [model_3]
     pred_y_val = []
     for i, model in enumerate(models):
-        models[i] = train(model, X_train, y_train, X_val, y_val, epochs=2)
+        models[i] = train(model, X_train, y_train, X_val, y_val, epochs=5)
         pred_y_val_ = models[i].predict(X_val, batch_size=512, verbose=0)
         pred_y_val.append(pred_y_val_)
     pred_y_val = np.mean(pred_y_val, axis=0)
