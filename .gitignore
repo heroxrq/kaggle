@@ -10,6 +10,7 @@
 *.pyc
 *log*
 *ipynb_checkpoints
+*.csv
 exp
 model
 submission
